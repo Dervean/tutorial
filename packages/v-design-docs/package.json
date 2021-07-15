@@ -14,7 +14,7 @@
     "lib"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
+    "registry": "http://registry.npmjs.org",
     "access": "public"
   },
   "repository": {
@@ -27,5 +27,6 @@
   },
   "bugs": {
     "url": "https://github.com/Dervean/tutorial/issues"
-  }
+  },
+  "gitHead": "d9289ce7cd53d92a590b7c10cd32083c9968473c"
 }
