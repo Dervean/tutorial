@@ -1,6 +1,6 @@
 {
   "name": "@dervean/v-design-components",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "description": "> TODO: description",
   "author": "Dervean",
   "homepage": "https://github.com/Dervean/tutorial#readme",
@@ -32,6 +32,5 @@
   "gitHead": "d9289ce7cd53d92a590b7c10cd32083c9968473c",
   "dependencies": {
     "vue": "^3.1.4"
-  },
-  "devDependencies": {}
+  }
 }
