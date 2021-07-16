@@ -1,6 +1,6 @@
 {
   "name": "@dervean/v-design-components",
-  "version": "0.0.3",
+  "version": "0.0.1",
   "description": "> TODO: description",
   "author": "Dervean",
   "homepage": "https://github.com/Dervean/tutorial#readme",
@@ -23,10 +23,15 @@
     "directory": "packages/v-design-docs"
   },
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "dev": "cross-env NODE_ENV=development webpack serve --config build/webpack.dev.config.js --hot"
   },
   "bugs": {
     "url": "https://github.com/Dervean/tutorial/issues"
   },
-  "gitHead": "ea14f09a519d6d00e15d97ff4a24eb09e906e8fa"
+  "gitHead": "d9289ce7cd53d92a590b7c10cd32083c9968473c",
+  "dependencies": {
+    "vue": "^3.1.4"
+  },
+  "devDependencies": {}
 }
