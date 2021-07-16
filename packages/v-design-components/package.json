@@ -29,7 +29,7 @@
   "bugs": {
     "url": "https://github.com/Dervean/tutorial/issues"
   },
-  "gitHead": "d9289ce7cd53d92a590b7c10cd32083c9968473c",
+  "gitHead": "99e5ce9fe1313ac5e1dd8a38123cc92e21f518dc",
   "dependencies": {
     "vue": "^3.1.4"
   }
