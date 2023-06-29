@@ -1,0 +1,41 @@
+{
+  "status": 0,
+  "statusCode": 200,
+  "payload": {
+    "id": "9016",
+    "flow_id": "3618477",
+    "record_id": "85",
+    "flowId": 3618477,
+    "pluginId": 85,
+    "status": "success",
+    "env": "production"
+  },
+  "userInfo": {
+    "login": "wangdeyun",
+    "name": "王德运",
+    "role": "owner",
+    "orgId": "12345",
+    "orgName": "name"
+  },
+  "data": {
+    "res": {
+      "id": 27543353,
+      "flow_id": 3618477,
+      "plugin_id": 85,
+      "plugin_name": "CanaryCheck",
+      "op": "wangdeyun",
+      "status": "success",
+      "log": [
+        {
+          "log": "wangdeyun 对本次灰度发布进行了全量上线操作"
+        }
+      ],
+      "callback": {
+        "description": "wangdeyun 对本次灰度发布进行了全量上线操作"
+      },
+      "created_at": "2022-11-28T09:14:08.899Z",
+      "updated_at": "2022-11-28T09:24:52.000Z"
+    },
+    "status": "success"
+  }
+}

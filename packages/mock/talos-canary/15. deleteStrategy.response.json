@@ -1,0 +1,19 @@
+{
+  "status": 0,
+  "statusCode": 200,
+  "payload": {
+    "canaryId": 19602,
+    "env": "production"
+  },
+  "userInfo": {
+    "login": "wangdeyun",
+    "name": "王德运",
+    "role": "",
+    "orgId": "12345",
+    "orgName": "name"
+  },
+  "data": {
+    "success": false,
+    "message": "canaryId: 19602 中, 不存在有效的告警策略。"
+  }
+}

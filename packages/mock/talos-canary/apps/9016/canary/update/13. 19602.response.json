@@ -1,0 +1,56 @@
+{
+  "status": 0,
+  "statusCode": 200,
+  "payload": {
+    "app_id": "9016",
+    "canary_id": "19602",
+    "status": "online",
+    "flow_id": 3618477,
+    "loginModel": "",
+    "loginIds": "",
+    "percentage": 5,
+    "htmlType": "awp-html-in",
+    "key": "nibfe",
+    "canaryType": "canary/3618477_3c81d48",
+    "slug": "test-talos-project",
+    "op": "wangdeyun",
+    "env": "production",
+    "command": "update_percentage",
+    "whitelist": [
+      {
+        "whitelistKey": "",
+        "whitelistVal": "",
+        "whitelistKeyType": "cookie"
+      }
+    ],
+    "accountWhiteList": []
+  },
+  "userInfo": {
+    "login": "wangdeyun",
+    "name": "王德运",
+    "role": "member",
+    "orgId": "12345",
+    "orgName": "name"
+  },
+  "data": {
+    "id": 19602,
+    "app_id": 9016,
+    "flow_id": 3618477,
+    "aegis_app_id": "14",
+    "aegis_api_id": "-1",
+    "percentage": 5,
+    "percentage_range": "[\n  0,\n  20\n]",
+    "login_model": "",
+    "login_id": "",
+    "status": "modify_pending",
+    "origin_query": "315eb3a0-9f7c-41b9-af39-4890e3f2f9a6",
+    "canary_query": "ffa95ea6-e698-40ea-a6b3-d73aab1d3767",
+    "op": "wangdeyun",
+    "config": "{\n  \"cookiePath\": \"/\",\n  \"canaryStages\": [\n    {\n      \"dateTime\": \"\",\n      \"percentage\": 1\n    }\n  ],\n  \"canaryPreLimit\": 0,\n  \"whitelistStrategies\": [],\n  \"canaryRangeLimit\": 20,\n  \"whitelistCanary\": false,\n  \"accountWhiteList\": []\n}",
+    "online_time": "2022-11-28T09:14:08.000Z",
+    "offline_time": "2022-11-28T09:14:08.000Z",
+    "subAppId": "0",
+    "created_at": "2022-11-28T09:14:08.720Z",
+    "updated_at": "2022-11-28T09:18:04.000Z"
+  }
+}

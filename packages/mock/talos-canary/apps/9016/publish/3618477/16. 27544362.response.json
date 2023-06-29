@@ -1,0 +1,38 @@
+{
+  "status": 0,
+  "statusCode": 200,
+  "payload": {
+    "id": "9016",
+    "flow_id": "3618477",
+    "record_id": "27544362",
+    "flowId": 3618477,
+    "pluginId": 13,
+    "status": "success"
+  },
+  "userInfo": {
+    "login": "wangdeyun",
+    "name": "王德运",
+    "role": "owner",
+    "orgId": "12345",
+    "orgName": "name"
+  },
+  "data": {
+    "id": 27544362,
+    "flow_id": 3618477,
+    "plugin_id": 13,
+    "plugin_name": "HumanCheck",
+    "op": "wangdeyun",
+    "status": "success",
+    "log": [
+      {
+        "log": "wangdeyun 完成了发布后的人工确认，确认结果正常"
+      }
+    ],
+    "callback": {
+      "groupMsg": "请 @王德运 进行线上验证，并且在页面：https://talos.sankuai.com/#/project/9016/log/3618477 进行验证结果点击",
+      "description": "上线后人工验证正常"
+    },
+    "created_at": "2022-11-28T09:24:53.921Z",
+    "updated_at": "2022-11-28T09:29:02.000Z"
+  }
+}

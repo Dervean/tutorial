@@ -1,0 +1,16 @@
+{
+  "status": 0,
+  "statusCode": 200,
+  "payload": {
+    "env": "production",
+    "app_id": "9016"
+  },
+  "userInfo": {
+    "login": "wangdeyun",
+    "name": "王德运",
+    "role": "member",
+    "orgId": "12345",
+    "orgName": "name"
+  },
+  "data": []
+}

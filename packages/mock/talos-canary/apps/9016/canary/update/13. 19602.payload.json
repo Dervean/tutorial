@@ -1,0 +1,22 @@
+{
+  "status": "online",
+  "flow_id": 3618477,
+  "loginModel": "",
+  "loginIds": "",
+  "percentage": 5,
+  "htmlType": "awp-html-in",
+  "key": "nibfe",
+  "canaryType": "canary/3618477_3c81d48",
+  "slug": "test-talos-project",
+  "op": "wangdeyun",
+  "env": "production",
+  "command": "update_percentage",
+  "whitelist": [
+    {
+      "whitelistKey": "",
+      "whitelistVal": "",
+      "whitelistKeyType": "cookie"
+    }
+  ],
+  "accountWhiteList": []
+}

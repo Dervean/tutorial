@@ -1,0 +1,24 @@
+{
+  "status": 0,
+  "statusCode": 200,
+  "payload": {
+    "id": "9016",
+    "flow_id": "3618845",
+    "record_id": "85",
+    "flowId": 3618845,
+    "pluginId": 85,
+    "status": "cancel",
+    "env": "production"
+  },
+  "userInfo": {
+    "login": "wangdeyun",
+    "name": "王德运",
+    "role": "owner",
+    "orgId": "12345",
+    "orgName": "name"
+  },
+  "data": {
+    "res": "流程结束-cancel",
+    "status": "success"
+  }
+}

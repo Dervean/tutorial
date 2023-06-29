@@ -1,0 +1,7 @@
+/* 全局的样式设置，默认在 global.ts 中引入 */
+@import './var';
+
+$button-radius: 10px;
+/* 必须要改变字体路径 */
+$icon-font-path: '~@ss/mtd-vue/components/theme2/fonts';
+@import "@ss/mtd-vue/components/theme2/index.scss";

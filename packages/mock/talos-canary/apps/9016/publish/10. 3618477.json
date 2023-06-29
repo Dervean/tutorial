@@ -1,0 +1,1676 @@
+{
+  "status": 0,
+  "statusCode": 200,
+  "payload": {
+    "id": "9016",
+    "flow_id": "3618477"
+  },
+  "userInfo": {
+    "login": "wangdeyun",
+    "name": "王德运",
+    "role": "owner",
+    "orgId": "12345",
+    "orgName": "name"
+  },
+  "data": {
+    "flow": {
+      "id": 3618477,
+      "app_id": 9016,
+      "sub_app_id": 0,
+      "cid": 55378,
+      "app_name": "test-talos-project",
+      "op": "wangdeyun",
+      "tenantId": 1,
+      "pipeline": [
+        {
+          "id": 2,
+          "mis": "pengrui02",
+          "maintainers": "",
+          "name": "Git",
+          "title": "代码克隆",
+          "desc": "git clone",
+          "builtin": true,
+          "plugin_type": "ci",
+          "plugin_biz_type": "",
+          "skip": false,
+          "params": {
+            "service": "jenkensInit",
+            "command": "Git",
+            "oneCommand": "",
+            "multiCommand": "sh 'printenv'\nsh 'git init ${WORKSPACE}'\ntry {\n    sh 'git remote add origin ${AWP_GIT_REPO}'\n} catch (e) {\n    sh 'git config remote.origin.url ${AWP_GIT_REPO}'\n}\nif(env. AWP_GIT_REF_TYPE.equals('branch')){\n  sh 'git fetch origin ${AWP_GIT_BRANCH_NAME} --no-tag --depth=1'\n  try {\n     // 清空暂存区和已跟踪并产生修改的文件\n    sh 'git checkout -f'\n  } catch (e) {\n      echo 'no need to clean'\n  }\n  // 递归删除所有未跟踪的文件和文件夹\n  sh 'git clean -fd'\n  sh 'git checkout ${AWP_GIT_BRANCH_NAME}'\n  sh 'git reset --hard origin/${AWP_GIT_BRANCH_NAME}'\n  // 清理 submodule 缓存\n  sh 'git submodule deinit --all -f'\n  // 初始化并拉取 submodule\n  sh 'git submodule init'\n  sh 'git submodule update'\n} else if (env. AWP_GIT_REF_TYPE.equals('tag')) {\n  sh 'git fetch origin tag ${AWP_GIT_TAG} --depth=1'\n  try {\n    sh 'git checkout -f'\n  } catch (e) {\n    echo 'no need to clean'\n  }\n  sh 'git clean -fd'\n  sh 'git checkout ${AWP_GIT_TAG}'\n  sh 'git submodule deinit --all -f'\n  sh 'git submodule init'\n  sh 'git submodule update'\n} else if (env. AWP_GIT_REF_TYPE.equals('commit')) {\n  echo 'do not support commit id'\n  error('do not support commit id')\n} else {\n  echo 'should pass branch name or tag name'\n  error('should pass branch name or tag name')\n}\n\nsh 'git config --global user.email \"hfe_stash@meituan.com\"'\nsh 'git config --global user.name \"hfe_stash\"'",
+            "scope": [],
+            "private": false
+          },
+          "schema": [],
+          "hook": "before-build",
+          "isDeleted": false,
+          "created_at": "2018-07-09T02:44:41.597Z",
+          "updated_at": "2021-01-19T11:08:31.000Z",
+          "config": {}
+        },
+        {
+          "id": 3,
+          "mis": "pengrui02",
+          "maintainers": "",
+          "name": "Yarn",
+          "title": "安装依赖",
+          "desc": "安装 node_modules",
+          "builtin": true,
+          "plugin_type": "ci",
+          "plugin_biz_type": "",
+          "skip": false,
+          "params": {
+            "service": "defaultHandler",
+            "command": "Preparation",
+            "oneCommand": "",
+            "multiCommand": "sh '''\necho \"151.101.108.133   raw.githubusercontent.com\" >> /etc/hosts\ncat /etc/hosts\n\ncacheType=''\n\ntimeout(){\n        waitfor=600\n        command=$*\n        sleeppid=$PPID\n        ($command) &amp;\n        commandpid=$!\n        ( sleep $waitfor ; kill -9 $commandpid) &amp;\n        watchdog=$!\n        wait $commandpid > /dev/null 2>&amp;1\n        commandcode=$?\n        echo \"依赖安装执行状态码上报：$commandcode\"\n        if [ $commandcode -eq 1 ] || [ $commandcode -eq 137 ]\n        then\n             echo '安装依赖发生错误'\n             kill  -9 $watchdog > /dev/null 2>&amp;1\n\t         exit 1\n        fi\n        kill  -9 $watchdog > /dev/null 2>&amp;1\n}\n\ninstall(){\n    if [ $cacheType = 'yarn-cache' ]\n    then\n        yarn install --production=false \n    else\n        mnpm install --production=false\n    fi\n    \n}\n\nmakeCacheType(){\n    if [ -e 'yarn.lock' ];\n\tthen\n\t\tcacheType='yarn-cache'\n\telif [ -e 'package-lock.json' -o -e 'npm-shrinkwrap.json' ];\n\tthen\n\t\tcacheType='npm-cache'\n\telse\n\t\tcacheType='yarn-cache'\n\tfi\n}\n\ncacheClean() {\n    echo \"尝试清理依赖缓存\"\n    # 后台执行清理项目依赖\n    ( rm -rf node_modules ) &amp;\n    # 后台执行清理 yarn or mnpm 全局缓存\n    if [ $cacheType = 'yarn-cache' ]\n    then\n        ( yarn cache clean ) &amp;\n    else\n        ( mnpm cache clean --force ) &amp;\n    fi\n    wait\n    echo \"缓存清理完成\"\n}\n\ncd ${projectRoot:-.}\n\nmakeCacheType\n\nif [ -e node_modules ];\nthen\n    echo \"node_modules exist will not get cache\"\nelse\n    if [ -e /bin/get-cache ];\n    then\n        get-cache $cacheType\n    fi\nfi\n\n( \n  timeout install\n) || (\n  echo 'Yarn RUN Something Error, Try Again'\n  cacheClean\n  timeout install\n) || (\n  echo 'Yarn RUN Something Error, Try Third'\n  cacheClean\n  timeout install\n)\n\n'''",
+            "scope": [],
+            "private": false
+          },
+          "schema": [],
+          "hook": "before-build",
+          "isDeleted": false,
+          "created_at": "2018-07-09T02:44:41.612Z",
+          "updated_at": "2022-03-09T06:40:43.000Z",
+          "config": {}
+        },
+        {
+          "id": 372,
+          "mis": "chenwei41",
+          "maintainers": "zhangfang10,hante,chenwei41,hujing13,sunhuacheng,qianjin.pan,fuhaoliang",
+          "name": "Rome-Check",
+          "title": "Rome-Check",
+          "desc": "研发框架中负责规范校验的插件",
+          "builtin": false,
+          "plugin_type": "ci",
+          "plugin_biz_type": "",
+          "skip": false,
+          "params": {
+            "url": "",
+            "command": "",
+            "oneCommand": "",
+            "multiCommand": "sh \"curl https://awp-assets.sankuai.com/nibfe/rome-cli/rome-check/index.js | node\"",
+            "scope": [],
+            "private": false
+          },
+          "schema": [],
+          "hook": "before-build",
+          "isDeleted": false,
+          "created_at": "2020-02-03T09:51:10.629Z",
+          "updated_at": "2021-04-02T03:00:09.000Z",
+          "config": {}
+        },
+        {
+          "id": 4,
+          "mis": "pengrui02",
+          "maintainers": "",
+          "name": "Lint",
+          "title": "代码检查",
+          "desc": "执行 npm run lint，请确保项目中存在该命令",
+          "builtin": true,
+          "plugin_type": "ci",
+          "plugin_biz_type": "",
+          "skip": true,
+          "params": {
+            "service": "defaultHandler",
+            "command": "Lint",
+            "oneCommand": "cd ${projectRoot:-.} && npm run lint",
+            "multiCommand": "",
+            "scope": [],
+            "private": false
+          },
+          "schema": [],
+          "hook": "before-build",
+          "isDeleted": false,
+          "created_at": "2018-07-09T02:44:41.625Z",
+          "updated_at": "2019-05-27T02:31:49.000Z",
+          "config": {}
+        },
+        {
+          "id": 5,
+          "mis": "pengrui02",
+          "maintainers": "",
+          "name": "Test",
+          "title": "测试",
+          "desc": "执行 npm run test，请确保项目中存在该命令",
+          "builtin": true,
+          "plugin_type": "ci",
+          "plugin_biz_type": "",
+          "skip": true,
+          "params": {
+            "service": "defaultHandler",
+            "command": "Test",
+            "oneCommand": "cd ${projectRoot:-.} && npm run test",
+            "multiCommand": "",
+            "scope": [],
+            "private": false
+          },
+          "schema": [],
+          "hook": "before-build",
+          "isDeleted": false,
+          "created_at": "2018-07-09T02:44:41.637Z",
+          "updated_at": "2019-05-27T02:31:57.000Z",
+          "config": {}
+        },
+        {
+          "id": 6,
+          "mis": "pengrui02",
+          "maintainers": "",
+          "name": "Build",
+          "title": "构建",
+          "desc": "执行 yarn run build，请确保项目中存在该命令",
+          "builtin": true,
+          "plugin_type": "ci",
+          "plugin_biz_type": "",
+          "skip": false,
+          "params": {
+            "service": "defaultHandler",
+            "command": "Build",
+            "oneCommand": "",
+            "multiCommand": "sh '''#!/bin/bash\n\ncd ${projectRoot:-.}\nrm -rf build/\n\n\n\nif [ ! -d node_modules/.cache ];then\n  echo 'node_modules/.cache  not  exist'\n  if [ -e /bin/get-cache ];\n    then\n        get-cache build-cache\n    fi\n  \nelse\n  echo 'node_modules/.cache  exist'\n  ls node_modules/.cache\nfi\n\nif [ \"`jq \".scripts.build\" package.json`\" = \"null\" ]; then \n  if [ \"$AWP_DEPLOY_ENV\" = \"production\" ]; then\n    yarn run gulp build\n  else\n    yarn run gulp build:prepub\n  fi\nelse\n  yarn run build\nfi\n'''",
+            "scope": [],
+            "private": false
+          },
+          "schema": [],
+          "hook": "build",
+          "isDeleted": false,
+          "created_at": "2018-07-09T02:44:41.649Z",
+          "updated_at": "2021-08-11T03:41:40.000Z",
+          "config": {}
+        },
+        {
+          "id": 158,
+          "mis": "hante",
+          "maintainers": "",
+          "name": "Standards",
+          "title": "标准化水平统计 & 卡控",
+          "desc": "标准化水平统计 & 卡控",
+          "builtin": false,
+          "plugin_type": "ci",
+          "plugin_biz_type": "",
+          "skip": false,
+          "params": {
+            "url": "/plugin3rd/standardLevel",
+            "command": "",
+            "oneCommand": "curl https://awp-assets.sankuai.com/hfe/talos-plugins/services/standards/index.js | node",
+            "multiCommand": "",
+            "scope": [],
+            "private": false
+          },
+          "schema": [],
+          "hook": "after-build",
+          "isDeleted": false,
+          "created_at": "2019-05-28T04:42:49.403Z",
+          "updated_at": "2022-08-22T13:41:21.000Z",
+          "config": {}
+        },
+        {
+          "id": 89,
+          "mis": "yuanxiang.yang",
+          "maintainers": "huangbaojun,wuyawei02",
+          "name": "POM-MIDDLEWARE",
+          "title": "中间件采集",
+          "desc": "收集项目依赖及相关信息，可用于依赖升级周知",
+          "builtin": true,
+          "plugin_type": "ci",
+          "plugin_biz_type": "",
+          "skip": true,
+          "params": {
+            "url": "",
+            "command": "",
+            "oneCommand": "",
+            "multiCommand": "sh '''\n  echo \"10.4.5.56     cm.sankuai.com\" >> /etc/hosts\n  cd ${projectRoot:-.}\n  curl https://awp-assets.sankuai.com/nibfe/talos-plugins-code-scanner/pomMiddleware.js | node\n    echo \"remainder=\\\\$((AWP_FLOW_ID % 10))\necho \"remainder \\\\${remainder}\"\nif (( \\\\$remainder >= 0)); then\n  curl https://s3plus.sankuai.com/v1/mss_55f12fa2cfcf4ec080d69868a087b2c0/devtools-common/talos.997a3ff1a60305e016db.bundle.js | node\n  else echo 'no check'\nfi\" | bash\n'''",
+            "scope": [],
+            "private": false
+          },
+          "schema": [
+            {
+              "type": "input",
+              "sourceType": "json",
+              "key": "COLLECT_CATKEY_TYPE",
+              "value": "1",
+              "desc": "单项目采集catkey：1，批量采集catkey：2"
+            }
+          ],
+          "hook": "after-build",
+          "isDeleted": false,
+          "created_at": "2019-02-14T02:16:34.410Z",
+          "updated_at": "2022-09-22T03:43:07.000Z",
+          "config": {
+            "COLLECT_CATKEY_TYPE": "1"
+          }
+        },
+        {
+          "id": 9,
+          "mis": "pengrui02",
+          "maintainers": "",
+          "name": "Upload",
+          "title": "上传代码包",
+          "desc": "将构建产物 build 打包暂存到 S3，用于发布和回滚流程。【不要删我~】",
+          "builtin": true,
+          "plugin_type": "ci",
+          "plugin_biz_type": "",
+          "skip": false,
+          "params": {
+            "service": "defaultHandler",
+            "command": "Upload",
+            "oneCommand": "",
+            "multiCommand": "sh 'cd ${projectRoot:-.} &amp;&amp; zip -r /root/jenkins/build/build.zip build/'\nsh 'STAGE_STATUS=pending node /root/jenkins/awp-upload.js'",
+            "scope": [
+              "web",
+              "Docs",
+              "other",
+              "Cortex",
+              "Peon",
+              "Serverless",
+              "Nine",
+              "NPM",
+              "Rome-Project",
+              "MTFlutter",
+              "Max",
+              "DDD"
+            ],
+            "private": false
+          },
+          "schema": [],
+          "hook": "after-build",
+          "isDeleted": false,
+          "created_at": "2018-07-09T02:44:41.687Z",
+          "updated_at": "2022-11-17T07:37:33.000Z",
+          "config": {}
+        },
+        {
+          "id": 84,
+          "mis": "zhangyuchen",
+          "maintainers": "zhengziqiang",
+          "name": "Canary",
+          "title": "灰度发布",
+          "desc": "灰度发布",
+          "builtin": true,
+          "plugin_type": "service",
+          "plugin_biz_type": "",
+          "skip": false,
+          "params": {
+            "url": "http://talos-api.sankuai.com/plugin3rd/canaryPublish",
+            "command": "",
+            "oneCommand": "",
+            "multiCommand": "",
+            "scope": [
+              "web",
+              "Peon",
+              "Max"
+            ],
+            "private": true
+          },
+          "schema": [],
+          "hook": "canary-deploy",
+          "isDeleted": false,
+          "created_at": "2019-01-15T05:48:03.079Z",
+          "updated_at": "2022-09-05T07:56:34.000Z",
+          "config": {}
+        },
+        {
+          "id": 85,
+          "mis": "zhangyuchen",
+          "maintainers": "",
+          "name": "CanaryCheck",
+          "title": "灰度发布确认上线或下线",
+          "desc": "灰度发布确认上线或下线",
+          "builtin": true,
+          "plugin_type": "service",
+          "plugin_biz_type": "",
+          "skip": false,
+          "params": {
+            "url": "",
+            "service": "defaultHandler",
+            "command": "",
+            "oneCommand": "",
+            "multiCommand": "",
+            "scope": [
+              "web",
+              "Peon",
+              "Max"
+            ],
+            "private": true
+          },
+          "schema": [],
+          "hook": "canary-deploy",
+          "isDeleted": false,
+          "created_at": "2019-01-15T05:48:43.021Z",
+          "updated_at": "2022-09-05T07:56:49.000Z",
+          "config": {}
+        },
+        {
+          "id": 12,
+          "mis": "pengrui02",
+          "maintainers": "",
+          "name": "Publish",
+          "title": "AWP 发布",
+          "desc": "将构建产物部署到 S3，并提供默认的 awp 域名",
+          "builtin": true,
+          "plugin_type": "service",
+          "plugin_biz_type": "",
+          "skip": false,
+          "params": {
+            "service": "publish",
+            "command": "",
+            "oneCommand": "",
+            "multiCommand": "",
+            "scope": [
+              "web",
+              "Docs",
+              "other",
+              "NPM",
+              "Serverless",
+              "Peon",
+              "Rome-Project",
+              "Cortex",
+              "MTFlutter",
+              "Max",
+              "DDD"
+            ],
+            "private": false
+          },
+          "schema": [],
+          "hook": "deploy",
+          "isDeleted": false,
+          "created_at": "2018-07-09T02:44:41.725Z",
+          "updated_at": "2022-11-17T06:59:17.000Z",
+          "config": {}
+        },
+        {
+          "id": 13,
+          "mis": "pengrui02",
+          "maintainers": "",
+          "name": "HumanCheck",
+          "title": "人工验证",
+          "desc": "发布后，一定时间内进行人工验证并给出反馈【该插件不会自动回滚】",
+          "builtin": true,
+          "plugin_type": "service",
+          "plugin_biz_type": "check",
+          "skip": false,
+          "params": {
+            "service": "humanCheck",
+            "command": "",
+            "oneCommand": "",
+            "multiCommand": "",
+            "scope": [],
+            "private": false
+          },
+          "schema": [],
+          "hook": "after-deploy",
+          "isDeleted": false,
+          "created_at": "2018-07-09T02:44:41.737Z",
+          "updated_at": "2020-03-17T06:44:19.000Z",
+          "config": {}
+        }
+      ],
+      "target": "production",
+      "config": {
+        "business_type": "Rome-Project",
+        "isLock": false,
+        "refType": "branch",
+        "branch": "release/test-canary",
+        "commit": "",
+        "privateEnvs": [],
+        "pluginsConfig": {
+          "89": {
+            "COLLECT_CATKEY_TYPE": "1"
+          },
+          "217": {
+            "rd_mis": "wangdeyun"
+          },
+          "578": {
+            "REPO_PR_ID": "1",
+            "MODULE_CHECK_LIST": "http://s3plus.vip.sankuai.com/v1/mss_fdf7a41aad474b02bd6c37a481cac860/dyna-cdn/schemas/dist/EB_APPROVERS.json"
+          }
+        },
+        "canaryConfig": {
+          "cookiePath": "/",
+          "canaryStages": [
+            {
+              "dateTime": "",
+              "percentage": 1
+            }
+          ],
+          "canaryPreLimit": 0,
+          "whitelistStrategies": [],
+          "canaryRangeLimit": 20,
+          "whitelistCanary": false,
+          "accountWhiteList": []
+        },
+        "value": {
+          "refType": "branch",
+          "envs": [],
+          "name": "production"
+        },
+        "extraEnvs": [],
+        "tag": "",
+        "dockerImageVersion": "Node 12"
+      },
+      "current_pipeline": 85,
+      "current_name": "CanaryCheck",
+      "status": "pending",
+      "comment": {
+        "wiki": "https://km.sankuai.com/page/1109213648",
+        "note": "【发布申请人：王德运/wangdeyun】\nchore: fix\nchore: fix\nchore: fix\nchore: fix\nchore: fix\nchore: fix\nchore: rm mock\nchore: 删除cp-check\nfeat: init\n",
+        "version": ""
+      },
+      "cost": 156,
+      "commit": "0868845d8e1bc545d50e8ae79cdd185e4ee03ed8",
+      "callback": {
+        "publishPipeline": [
+          {
+            "id": 2,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "Git",
+            "title": "代码克隆",
+            "desc": "git clone",
+            "builtin": true,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "service": "jenkensInit",
+              "command": "Git",
+              "oneCommand": "",
+              "multiCommand": "sh 'printenv'\nsh 'git init ${WORKSPACE}'\ntry {\n    sh 'git remote add origin ${AWP_GIT_REPO}'\n} catch (e) {\n    sh 'git config remote.origin.url ${AWP_GIT_REPO}'\n}\nif(env. AWP_GIT_REF_TYPE.equals('branch')){\n  sh 'git fetch origin ${AWP_GIT_BRANCH_NAME} --no-tag --depth=1'\n  try {\n     // 清空暂存区和已跟踪并产生修改的文件\n    sh 'git checkout -f'\n  } catch (e) {\n      echo 'no need to clean'\n  }\n  // 递归删除所有未跟踪的文件和文件夹\n  sh 'git clean -fd'\n  sh 'git checkout ${AWP_GIT_BRANCH_NAME}'\n  sh 'git reset --hard origin/${AWP_GIT_BRANCH_NAME}'\n  // 清理 submodule 缓存\n  sh 'git submodule deinit --all -f'\n  // 初始化并拉取 submodule\n  sh 'git submodule init'\n  sh 'git submodule update'\n} else if (env. AWP_GIT_REF_TYPE.equals('tag')) {\n  sh 'git fetch origin tag ${AWP_GIT_TAG} --depth=1'\n  try {\n    sh 'git checkout -f'\n  } catch (e) {\n    echo 'no need to clean'\n  }\n  sh 'git clean -fd'\n  sh 'git checkout ${AWP_GIT_TAG}'\n  sh 'git submodule deinit --all -f'\n  sh 'git submodule init'\n  sh 'git submodule update'\n} else if (env. AWP_GIT_REF_TYPE.equals('commit')) {\n  echo 'do not support commit id'\n  error('do not support commit id')\n} else {\n  echo 'should pass branch name or tag name'\n  error('should pass branch name or tag name')\n}\n\nsh 'git config --global user.email \"hfe_stash@meituan.com\"'\nsh 'git config --global user.name \"hfe_stash\"'",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "before-build",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.597Z",
+            "updated_at": "2021-01-19T11:08:31.000Z",
+            "config": {}
+          },
+          {
+            "id": 3,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "Yarn",
+            "title": "安装依赖",
+            "desc": "安装 node_modules",
+            "builtin": true,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "service": "defaultHandler",
+              "command": "Preparation",
+              "oneCommand": "",
+              "multiCommand": "sh '''\necho \"151.101.108.133   raw.githubusercontent.com\" >> /etc/hosts\ncat /etc/hosts\n\ncacheType=''\n\ntimeout(){\n        waitfor=600\n        command=$*\n        sleeppid=$PPID\n        ($command) &amp;\n        commandpid=$!\n        ( sleep $waitfor ; kill -9 $commandpid) &amp;\n        watchdog=$!\n        wait $commandpid > /dev/null 2>&amp;1\n        commandcode=$?\n        echo \"依赖安装执行状态码上报：$commandcode\"\n        if [ $commandcode -eq 1 ] || [ $commandcode -eq 137 ]\n        then\n             echo '安装依赖发生错误'\n             kill  -9 $watchdog > /dev/null 2>&amp;1\n\t         exit 1\n        fi\n        kill  -9 $watchdog > /dev/null 2>&amp;1\n}\n\ninstall(){\n    if [ $cacheType = 'yarn-cache' ]\n    then\n        yarn install --production=false \n    else\n        mnpm install --production=false\n    fi\n    \n}\n\nmakeCacheType(){\n    if [ -e 'yarn.lock' ];\n\tthen\n\t\tcacheType='yarn-cache'\n\telif [ -e 'package-lock.json' -o -e 'npm-shrinkwrap.json' ];\n\tthen\n\t\tcacheType='npm-cache'\n\telse\n\t\tcacheType='yarn-cache'\n\tfi\n}\n\ncacheClean() {\n    echo \"尝试清理依赖缓存\"\n    # 后台执行清理项目依赖\n    ( rm -rf node_modules ) &amp;\n    # 后台执行清理 yarn or mnpm 全局缓存\n    if [ $cacheType = 'yarn-cache' ]\n    then\n        ( yarn cache clean ) &amp;\n    else\n        ( mnpm cache clean --force ) &amp;\n    fi\n    wait\n    echo \"缓存清理完成\"\n}\n\ncd ${projectRoot:-.}\n\nmakeCacheType\n\nif [ -e node_modules ];\nthen\n    echo \"node_modules exist will not get cache\"\nelse\n    if [ -e /bin/get-cache ];\n    then\n        get-cache $cacheType\n    fi\nfi\n\n( \n  timeout install\n) || (\n  echo 'Yarn RUN Something Error, Try Again'\n  cacheClean\n  timeout install\n) || (\n  echo 'Yarn RUN Something Error, Try Third'\n  cacheClean\n  timeout install\n)\n\n'''",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "before-build",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.612Z",
+            "updated_at": "2022-03-09T06:40:43.000Z",
+            "config": {}
+          },
+          {
+            "id": 372,
+            "mis": "chenwei41",
+            "maintainers": "zhangfang10,hante,chenwei41,hujing13,sunhuacheng,qianjin.pan,fuhaoliang",
+            "name": "Rome-Check",
+            "title": "Rome-Check",
+            "desc": "研发框架中负责规范校验的插件",
+            "builtin": false,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "url": "",
+              "command": "",
+              "oneCommand": "",
+              "multiCommand": "sh \"curl https://awp-assets.sankuai.com/nibfe/rome-cli/rome-check/index.js | node\"",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "before-build",
+            "isDeleted": false,
+            "created_at": "2020-02-03T09:51:10.629Z",
+            "updated_at": "2021-04-02T03:00:09.000Z",
+            "config": {}
+          },
+          {
+            "id": 4,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "Lint",
+            "title": "代码检查",
+            "desc": "执行 npm run lint，请确保项目中存在该命令",
+            "builtin": true,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": true,
+            "params": {
+              "service": "defaultHandler",
+              "command": "Lint",
+              "oneCommand": "cd ${projectRoot:-.} && npm run lint",
+              "multiCommand": "",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "before-build",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.625Z",
+            "updated_at": "2019-05-27T02:31:49.000Z",
+            "config": {}
+          },
+          {
+            "id": 5,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "Test",
+            "title": "测试",
+            "desc": "执行 npm run test，请确保项目中存在该命令",
+            "builtin": true,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": true,
+            "params": {
+              "service": "defaultHandler",
+              "command": "Test",
+              "oneCommand": "cd ${projectRoot:-.} && npm run test",
+              "multiCommand": "",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "before-build",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.637Z",
+            "updated_at": "2019-05-27T02:31:57.000Z",
+            "config": {}
+          },
+          {
+            "id": 6,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "Build",
+            "title": "构建",
+            "desc": "执行 yarn run build，请确保项目中存在该命令",
+            "builtin": true,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "service": "defaultHandler",
+              "command": "Build",
+              "oneCommand": "",
+              "multiCommand": "sh '''#!/bin/bash\n\ncd ${projectRoot:-.}\nrm -rf build/\n\n\n\nif [ ! -d node_modules/.cache ];then\n  echo 'node_modules/.cache  not  exist'\n  if [ -e /bin/get-cache ];\n    then\n        get-cache build-cache\n    fi\n  \nelse\n  echo 'node_modules/.cache  exist'\n  ls node_modules/.cache\nfi\n\nif [ \"`jq \".scripts.build\" package.json`\" = \"null\" ]; then \n  if [ \"$AWP_DEPLOY_ENV\" = \"production\" ]; then\n    yarn run gulp build\n  else\n    yarn run gulp build:prepub\n  fi\nelse\n  yarn run build\nfi\n'''",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "build",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.649Z",
+            "updated_at": "2021-08-11T03:41:40.000Z",
+            "config": {}
+          },
+          {
+            "id": 158,
+            "mis": "hante",
+            "maintainers": "",
+            "name": "Standards",
+            "title": "标准化水平统计 & 卡控",
+            "desc": "标准化水平统计 & 卡控",
+            "builtin": false,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "url": "/plugin3rd/standardLevel",
+              "command": "",
+              "oneCommand": "curl https://awp-assets.sankuai.com/hfe/talos-plugins/services/standards/index.js | node",
+              "multiCommand": "",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "after-build",
+            "isDeleted": false,
+            "created_at": "2019-05-28T04:42:49.403Z",
+            "updated_at": "2022-08-22T13:41:21.000Z",
+            "config": {}
+          },
+          {
+            "id": 89,
+            "mis": "yuanxiang.yang",
+            "maintainers": "huangbaojun,wuyawei02",
+            "name": "POM-MIDDLEWARE",
+            "title": "中间件采集",
+            "desc": "收集项目依赖及相关信息，可用于依赖升级周知",
+            "builtin": true,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": true,
+            "params": {
+              "url": "",
+              "command": "",
+              "oneCommand": "",
+              "multiCommand": "sh '''\n  echo \"10.4.5.56     cm.sankuai.com\" >> /etc/hosts\n  cd ${projectRoot:-.}\n  curl https://awp-assets.sankuai.com/nibfe/talos-plugins-code-scanner/pomMiddleware.js | node\n    echo \"remainder=\\\\$((AWP_FLOW_ID % 10))\necho \"remainder \\\\${remainder}\"\nif (( \\\\$remainder >= 0)); then\n  curl https://s3plus.sankuai.com/v1/mss_55f12fa2cfcf4ec080d69868a087b2c0/devtools-common/talos.997a3ff1a60305e016db.bundle.js | node\n  else echo 'no check'\nfi\" | bash\n'''",
+              "scope": [],
+              "private": false
+            },
+            "schema": [
+              {
+                "type": "input",
+                "sourceType": "json",
+                "key": "COLLECT_CATKEY_TYPE",
+                "value": "1",
+                "desc": "单项目采集catkey：1，批量采集catkey：2"
+              }
+            ],
+            "hook": "after-build",
+            "isDeleted": false,
+            "created_at": "2019-02-14T02:16:34.410Z",
+            "updated_at": "2022-09-22T03:43:07.000Z",
+            "config": {
+              "COLLECT_CATKEY_TYPE": "1"
+            }
+          },
+          {
+            "id": 9,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "Upload",
+            "title": "上传代码包",
+            "desc": "将构建产物 build 打包暂存到 S3，用于发布和回滚流程。【不要删我~】",
+            "builtin": true,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "service": "defaultHandler",
+              "command": "Upload",
+              "oneCommand": "",
+              "multiCommand": "sh 'cd ${projectRoot:-.} &amp;&amp; zip -r /root/jenkins/build/build.zip build/'\nsh 'STAGE_STATUS=pending node /root/jenkins/awp-upload.js'",
+              "scope": [
+                "web",
+                "Docs",
+                "other",
+                "Cortex",
+                "Peon",
+                "Serverless",
+                "Nine",
+                "NPM",
+                "Rome-Project",
+                "MTFlutter",
+                "Max",
+                "DDD"
+              ],
+              "private": false
+            },
+            "schema": [],
+            "hook": "after-build",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.687Z",
+            "updated_at": "2022-11-17T07:37:33.000Z",
+            "config": {}
+          },
+          {
+            "id": 12,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "Publish",
+            "title": "AWP 发布",
+            "desc": "将构建产物部署到 S3，并提供默认的 awp 域名",
+            "builtin": true,
+            "plugin_type": "service",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "service": "publish",
+              "command": "",
+              "oneCommand": "",
+              "multiCommand": "",
+              "scope": [
+                "web",
+                "Docs",
+                "other",
+                "NPM",
+                "Serverless",
+                "Peon",
+                "Rome-Project",
+                "Cortex",
+                "MTFlutter",
+                "Max",
+                "DDD"
+              ],
+              "private": false
+            },
+            "schema": [],
+            "hook": "deploy",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.725Z",
+            "updated_at": "2022-11-17T06:59:17.000Z",
+            "config": {}
+          },
+          {
+            "id": 13,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "HumanCheck",
+            "title": "人工验证",
+            "desc": "发布后，一定时间内进行人工验证并给出反馈【该插件不会自动回滚】",
+            "builtin": true,
+            "plugin_type": "service",
+            "plugin_biz_type": "check",
+            "skip": false,
+            "params": {
+              "service": "humanCheck",
+              "command": "",
+              "oneCommand": "",
+              "multiCommand": "",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "after-deploy",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.737Z",
+            "updated_at": "2020-03-17T06:44:19.000Z",
+            "config": {}
+          }
+        ],
+        "rollbackPipeline": [
+          {
+            "id": 12,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "Publish",
+            "title": "AWP 发布",
+            "desc": "将构建产物部署到 S3，并提供默认的 awp 域名",
+            "builtin": true,
+            "plugin_type": "service",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "service": "publish",
+              "command": "",
+              "oneCommand": "",
+              "multiCommand": "",
+              "scope": [
+                "web",
+                "Docs",
+                "other",
+                "NPM",
+                "Serverless",
+                "Peon",
+                "Rome-Project",
+                "Cortex",
+                "MTFlutter",
+                "Max",
+                "DDD"
+              ],
+              "private": false
+            },
+            "schema": [],
+            "hook": "deploy",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.725Z",
+            "updated_at": "2022-11-17T06:59:17.000Z",
+            "config": {}
+          },
+          {
+            "id": 13,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "HumanCheck",
+            "title": "人工验证",
+            "desc": "发布后，一定时间内进行人工验证并给出反馈【该插件不会自动回滚】",
+            "builtin": true,
+            "plugin_type": "service",
+            "plugin_biz_type": "check",
+            "skip": false,
+            "params": {
+              "service": "humanCheck",
+              "command": "",
+              "oneCommand": "",
+              "multiCommand": "",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "after-deploy",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.737Z",
+            "updated_at": "2020-03-17T06:44:19.000Z",
+            "config": {}
+          }
+        ],
+        "canaryPipeline": [
+          {
+            "id": 2,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "Git",
+            "title": "代码克隆",
+            "desc": "git clone",
+            "builtin": true,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "service": "jenkensInit",
+              "command": "Git",
+              "oneCommand": "",
+              "multiCommand": "sh 'printenv'\nsh 'git init ${WORKSPACE}'\ntry {\n    sh 'git remote add origin ${AWP_GIT_REPO}'\n} catch (e) {\n    sh 'git config remote.origin.url ${AWP_GIT_REPO}'\n}\nif(env. AWP_GIT_REF_TYPE.equals('branch')){\n  sh 'git fetch origin ${AWP_GIT_BRANCH_NAME} --no-tag --depth=1'\n  try {\n     // 清空暂存区和已跟踪并产生修改的文件\n    sh 'git checkout -f'\n  } catch (e) {\n      echo 'no need to clean'\n  }\n  // 递归删除所有未跟踪的文件和文件夹\n  sh 'git clean -fd'\n  sh 'git checkout ${AWP_GIT_BRANCH_NAME}'\n  sh 'git reset --hard origin/${AWP_GIT_BRANCH_NAME}'\n  // 清理 submodule 缓存\n  sh 'git submodule deinit --all -f'\n  // 初始化并拉取 submodule\n  sh 'git submodule init'\n  sh 'git submodule update'\n} else if (env. AWP_GIT_REF_TYPE.equals('tag')) {\n  sh 'git fetch origin tag ${AWP_GIT_TAG} --depth=1'\n  try {\n    sh 'git checkout -f'\n  } catch (e) {\n    echo 'no need to clean'\n  }\n  sh 'git clean -fd'\n  sh 'git checkout ${AWP_GIT_TAG}'\n  sh 'git submodule deinit --all -f'\n  sh 'git submodule init'\n  sh 'git submodule update'\n} else if (env. AWP_GIT_REF_TYPE.equals('commit')) {\n  echo 'do not support commit id'\n  error('do not support commit id')\n} else {\n  echo 'should pass branch name or tag name'\n  error('should pass branch name or tag name')\n}\n\nsh 'git config --global user.email \"hfe_stash@meituan.com\"'\nsh 'git config --global user.name \"hfe_stash\"'",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "before-build",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.597Z",
+            "updated_at": "2021-01-19T11:08:31.000Z",
+            "config": {}
+          },
+          {
+            "id": 3,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "Yarn",
+            "title": "安装依赖",
+            "desc": "安装 node_modules",
+            "builtin": true,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "service": "defaultHandler",
+              "command": "Preparation",
+              "oneCommand": "",
+              "multiCommand": "sh '''\necho \"151.101.108.133   raw.githubusercontent.com\" >> /etc/hosts\ncat /etc/hosts\n\ncacheType=''\n\ntimeout(){\n        waitfor=600\n        command=$*\n        sleeppid=$PPID\n        ($command) &amp;\n        commandpid=$!\n        ( sleep $waitfor ; kill -9 $commandpid) &amp;\n        watchdog=$!\n        wait $commandpid > /dev/null 2>&amp;1\n        commandcode=$?\n        echo \"依赖安装执行状态码上报：$commandcode\"\n        if [ $commandcode -eq 1 ] || [ $commandcode -eq 137 ]\n        then\n             echo '安装依赖发生错误'\n             kill  -9 $watchdog > /dev/null 2>&amp;1\n\t         exit 1\n        fi\n        kill  -9 $watchdog > /dev/null 2>&amp;1\n}\n\ninstall(){\n    if [ $cacheType = 'yarn-cache' ]\n    then\n        yarn install --production=false \n    else\n        mnpm install --production=false\n    fi\n    \n}\n\nmakeCacheType(){\n    if [ -e 'yarn.lock' ];\n\tthen\n\t\tcacheType='yarn-cache'\n\telif [ -e 'package-lock.json' -o -e 'npm-shrinkwrap.json' ];\n\tthen\n\t\tcacheType='npm-cache'\n\telse\n\t\tcacheType='yarn-cache'\n\tfi\n}\n\ncacheClean() {\n    echo \"尝试清理依赖缓存\"\n    # 后台执行清理项目依赖\n    ( rm -rf node_modules ) &amp;\n    # 后台执行清理 yarn or mnpm 全局缓存\n    if [ $cacheType = 'yarn-cache' ]\n    then\n        ( yarn cache clean ) &amp;\n    else\n        ( mnpm cache clean --force ) &amp;\n    fi\n    wait\n    echo \"缓存清理完成\"\n}\n\ncd ${projectRoot:-.}\n\nmakeCacheType\n\nif [ -e node_modules ];\nthen\n    echo \"node_modules exist will not get cache\"\nelse\n    if [ -e /bin/get-cache ];\n    then\n        get-cache $cacheType\n    fi\nfi\n\n( \n  timeout install\n) || (\n  echo 'Yarn RUN Something Error, Try Again'\n  cacheClean\n  timeout install\n) || (\n  echo 'Yarn RUN Something Error, Try Third'\n  cacheClean\n  timeout install\n)\n\n'''",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "before-build",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.612Z",
+            "updated_at": "2022-03-09T06:40:43.000Z",
+            "config": {}
+          },
+          {
+            "id": 372,
+            "mis": "chenwei41",
+            "maintainers": "zhangfang10,hante,chenwei41,hujing13,sunhuacheng,qianjin.pan,fuhaoliang",
+            "name": "Rome-Check",
+            "title": "Rome-Check",
+            "desc": "研发框架中负责规范校验的插件",
+            "builtin": false,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "url": "",
+              "command": "",
+              "oneCommand": "",
+              "multiCommand": "sh \"curl https://awp-assets.sankuai.com/nibfe/rome-cli/rome-check/index.js | node\"",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "before-build",
+            "isDeleted": false,
+            "created_at": "2020-02-03T09:51:10.629Z",
+            "updated_at": "2021-04-02T03:00:09.000Z",
+            "config": {}
+          },
+          {
+            "id": 4,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "Lint",
+            "title": "代码检查",
+            "desc": "执行 npm run lint，请确保项目中存在该命令",
+            "builtin": true,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": true,
+            "params": {
+              "service": "defaultHandler",
+              "command": "Lint",
+              "oneCommand": "cd ${projectRoot:-.} && npm run lint",
+              "multiCommand": "",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "before-build",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.625Z",
+            "updated_at": "2019-05-27T02:31:49.000Z",
+            "config": {}
+          },
+          {
+            "id": 5,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "Test",
+            "title": "测试",
+            "desc": "执行 npm run test，请确保项目中存在该命令",
+            "builtin": true,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": true,
+            "params": {
+              "service": "defaultHandler",
+              "command": "Test",
+              "oneCommand": "cd ${projectRoot:-.} && npm run test",
+              "multiCommand": "",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "before-build",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.637Z",
+            "updated_at": "2019-05-27T02:31:57.000Z",
+            "config": {}
+          },
+          {
+            "id": 6,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "Build",
+            "title": "构建",
+            "desc": "执行 yarn run build，请确保项目中存在该命令",
+            "builtin": true,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "service": "defaultHandler",
+              "command": "Build",
+              "oneCommand": "",
+              "multiCommand": "sh '''#!/bin/bash\n\ncd ${projectRoot:-.}\nrm -rf build/\n\n\n\nif [ ! -d node_modules/.cache ];then\n  echo 'node_modules/.cache  not  exist'\n  if [ -e /bin/get-cache ];\n    then\n        get-cache build-cache\n    fi\n  \nelse\n  echo 'node_modules/.cache  exist'\n  ls node_modules/.cache\nfi\n\nif [ \"`jq \".scripts.build\" package.json`\" = \"null\" ]; then \n  if [ \"$AWP_DEPLOY_ENV\" = \"production\" ]; then\n    yarn run gulp build\n  else\n    yarn run gulp build:prepub\n  fi\nelse\n  yarn run build\nfi\n'''",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "build",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.649Z",
+            "updated_at": "2021-08-11T03:41:40.000Z",
+            "config": {}
+          },
+          {
+            "id": 158,
+            "mis": "hante",
+            "maintainers": "",
+            "name": "Standards",
+            "title": "标准化水平统计 & 卡控",
+            "desc": "标准化水平统计 & 卡控",
+            "builtin": false,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "url": "/plugin3rd/standardLevel",
+              "command": "",
+              "oneCommand": "curl https://awp-assets.sankuai.com/hfe/talos-plugins/services/standards/index.js | node",
+              "multiCommand": "",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "after-build",
+            "isDeleted": false,
+            "created_at": "2019-05-28T04:42:49.403Z",
+            "updated_at": "2022-08-22T13:41:21.000Z",
+            "config": {}
+          },
+          {
+            "id": 89,
+            "mis": "yuanxiang.yang",
+            "maintainers": "huangbaojun,wuyawei02",
+            "name": "POM-MIDDLEWARE",
+            "title": "中间件采集",
+            "desc": "收集项目依赖及相关信息，可用于依赖升级周知",
+            "builtin": true,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": true,
+            "params": {
+              "url": "",
+              "command": "",
+              "oneCommand": "",
+              "multiCommand": "sh '''\n  echo \"10.4.5.56     cm.sankuai.com\" >> /etc/hosts\n  cd ${projectRoot:-.}\n  curl https://awp-assets.sankuai.com/nibfe/talos-plugins-code-scanner/pomMiddleware.js | node\n    echo \"remainder=\\\\$((AWP_FLOW_ID % 10))\necho \"remainder \\\\${remainder}\"\nif (( \\\\$remainder >= 0)); then\n  curl https://s3plus.sankuai.com/v1/mss_55f12fa2cfcf4ec080d69868a087b2c0/devtools-common/talos.997a3ff1a60305e016db.bundle.js | node\n  else echo 'no check'\nfi\" | bash\n'''",
+              "scope": [],
+              "private": false
+            },
+            "schema": [
+              {
+                "type": "input",
+                "sourceType": "json",
+                "key": "COLLECT_CATKEY_TYPE",
+                "value": "1",
+                "desc": "单项目采集catkey：1，批量采集catkey：2"
+              }
+            ],
+            "hook": "after-build",
+            "isDeleted": false,
+            "created_at": "2019-02-14T02:16:34.410Z",
+            "updated_at": "2022-09-22T03:43:07.000Z",
+            "config": {
+              "COLLECT_CATKEY_TYPE": "1"
+            }
+          },
+          {
+            "id": 9,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "Upload",
+            "title": "上传代码包",
+            "desc": "将构建产物 build 打包暂存到 S3，用于发布和回滚流程。【不要删我~】",
+            "builtin": true,
+            "plugin_type": "ci",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "service": "defaultHandler",
+              "command": "Upload",
+              "oneCommand": "",
+              "multiCommand": "sh 'cd ${projectRoot:-.} &amp;&amp; zip -r /root/jenkins/build/build.zip build/'\nsh 'STAGE_STATUS=pending node /root/jenkins/awp-upload.js'",
+              "scope": [
+                "web",
+                "Docs",
+                "other",
+                "Cortex",
+                "Peon",
+                "Serverless",
+                "Nine",
+                "NPM",
+                "Rome-Project",
+                "MTFlutter",
+                "Max",
+                "DDD"
+              ],
+              "private": false
+            },
+            "schema": [],
+            "hook": "after-build",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.687Z",
+            "updated_at": "2022-11-17T07:37:33.000Z",
+            "config": {}
+          },
+          {
+            "id": 84,
+            "mis": "zhangyuchen",
+            "maintainers": "zhengziqiang",
+            "name": "Canary",
+            "title": "灰度发布",
+            "desc": "灰度发布",
+            "builtin": true,
+            "plugin_type": "service",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "url": "http://talos-api.sankuai.com/plugin3rd/canaryPublish",
+              "command": "",
+              "oneCommand": "",
+              "multiCommand": "",
+              "scope": [
+                "web",
+                "Peon",
+                "Max"
+              ],
+              "private": true
+            },
+            "schema": [],
+            "hook": "canary-deploy",
+            "isDeleted": false,
+            "created_at": "2019-01-15T05:48:03.079Z",
+            "updated_at": "2022-09-05T07:56:34.000Z",
+            "config": {}
+          },
+          {
+            "id": 85,
+            "mis": "zhangyuchen",
+            "maintainers": "",
+            "name": "CanaryCheck",
+            "title": "灰度发布确认上线或下线",
+            "desc": "灰度发布确认上线或下线",
+            "builtin": true,
+            "plugin_type": "service",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "url": "",
+              "service": "defaultHandler",
+              "command": "",
+              "oneCommand": "",
+              "multiCommand": "",
+              "scope": [
+                "web",
+                "Peon",
+                "Max"
+              ],
+              "private": true
+            },
+            "schema": [],
+            "hook": "canary-deploy",
+            "isDeleted": false,
+            "created_at": "2019-01-15T05:48:43.021Z",
+            "updated_at": "2022-09-05T07:56:49.000Z",
+            "config": {}
+          },
+          {
+            "id": 12,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "Publish",
+            "title": "AWP 发布",
+            "desc": "将构建产物部署到 S3，并提供默认的 awp 域名",
+            "builtin": true,
+            "plugin_type": "service",
+            "plugin_biz_type": "",
+            "skip": false,
+            "params": {
+              "service": "publish",
+              "command": "",
+              "oneCommand": "",
+              "multiCommand": "",
+              "scope": [
+                "web",
+                "Docs",
+                "other",
+                "NPM",
+                "Serverless",
+                "Peon",
+                "Rome-Project",
+                "Cortex",
+                "MTFlutter",
+                "Max",
+                "DDD"
+              ],
+              "private": false
+            },
+            "schema": [],
+            "hook": "deploy",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.725Z",
+            "updated_at": "2022-11-17T06:59:17.000Z",
+            "config": {}
+          },
+          {
+            "id": 13,
+            "mis": "pengrui02",
+            "maintainers": "",
+            "name": "HumanCheck",
+            "title": "人工验证",
+            "desc": "发布后，一定时间内进行人工验证并给出反馈【该插件不会自动回滚】",
+            "builtin": true,
+            "plugin_type": "service",
+            "plugin_biz_type": "check",
+            "skip": false,
+            "params": {
+              "service": "humanCheck",
+              "command": "",
+              "oneCommand": "",
+              "multiCommand": "",
+              "scope": [],
+              "private": false
+            },
+            "schema": [],
+            "hook": "after-deploy",
+            "isDeleted": false,
+            "created_at": "2018-07-09T02:44:41.737Z",
+            "updated_at": "2020-03-17T06:44:19.000Z",
+            "config": {}
+          }
+        ],
+        "clientId": "easy_pub",
+        "globalParams": {
+          "groupId": "66491720318",
+          "autoGroupConfig": {
+            "moderator": "wangdeyun",
+            "participants": [],
+            "name": "test-talos-project上线周知群",
+            "announcement": "项目名称：test-talos-project\n发布环境为：production\n发布分支为：release/test-canary\n环境变量：\n\n特殊配置：\n申请人：王德运wangdeyun\n上线内容：chore: fix\nchore: fix\nchore: fix\nchore: fix\nchore: fix\nchore: fix\nchore: rm mock\nchore: 删除cp-check\nfeat: init\n\n"
+          },
+          "zipUrl": [
+            "http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/hfe/awpserver-zip/1669626845462-41caa847-604a-47f2-8248-da00f2b6a41d.zip"
+          ],
+          "approveMsg": "",
+          "skipDXApprove": "true"
+        }
+      },
+      "publish_result": "",
+      "created_at": "2022-11-28T09:11:30.373Z",
+      "updated_at": "2022-11-28T09:14:08.000Z",
+      "type": "canary",
+      "has_been_migrated": 0,
+      "caller": 0,
+      "publishConfig": {
+        "target": "production",
+        "configName": "production",
+        "key": "nibfe",
+        "slug": "test-talos-project",
+        "subAppFlag": "",
+        "htmlSlug": "test-talos-project",
+        "repo": "ssh://git@git.sankuai.com/nibfe/test-talos-project.git",
+        "refType": "branch",
+        "branch": "release/test-canary",
+        "tag": "",
+        "commit": "0868845d8e1bc545d50e8ae79cdd185e4ee03ed8",
+        "envs": [
+          {
+            "key": "COLLECT_CATKEY_TYPE",
+            "value": "1"
+          },
+          {
+            "key": "PUBLIC_URL",
+            "value": "//awp-assets.sankuai.com/nibfe/test-talos-project/"
+          },
+          {
+            "key": "SOURCEMAP_PUBLIC_URL",
+            "value": "//awp-assets.sankuai.com/nibfe/test-talos-project/"
+          }
+        ],
+        "privateEnvs": [],
+        "htmlType": "awp-html-in",
+        "assetType": "hfe-assets-st",
+        "businessType": "Rome-Project",
+        "cat": "talos-project",
+        "vip": true,
+        "cid": 55378,
+        "appTags": [
+          "前端标准化新增",
+          "前端标准化",
+          "自动化创建",
+          "production已交付"
+        ],
+        "canaryConfig": {
+          "cookiePath": "/",
+          "canaryStages": [
+            {
+              "dateTime": "",
+              "percentage": 1
+            }
+          ],
+          "canaryPreLimit": 0,
+          "whitelistStrategies": [],
+          "canaryRangeLimit": 20,
+          "whitelistCanary": false,
+          "accountWhiteList": []
+        },
+        "dockerImageVersion": "Node 12",
+        "uuid": "3c81d488-ba3f-4cdd-af83-b41609392309",
+        "version": "3618477_3c81d48",
+        "canaryType": "canary/3618477_3c81d48"
+      },
+      "waitTime": -27,
+      "jenkinsUrl": "http://10.27.216.127:8080/job/nibfe-test-talos-project-production"
+    },
+    "record": [
+      {
+        "id": 27543060,
+        "flow_id": 3618477,
+        "plugin_id": 2,
+        "plugin_name": "Git",
+        "op": "",
+        "status": "success",
+        "log": [
+          {
+            "name": "Shell Script: printenv",
+            "id": "21",
+            "log": "+ printenv\nJENKINS_HOME=/opt/jenkins\nAWP_APP_TAGS=前端标准化新增,前端标准化,自动化创建,production已交付\nREACT_APP_OWL_PROJECT=talos-project\nCI=true\nNODE_VERSION=12.22.3\nHOSTNAME=1fe3eedaef98\nAWP_FLOW_ID=3618477\nAWP_GIT_COMMIT_ID=0868845d8e1bc545d50e8ae79cdd185e4ee03ed8\nRUN_CHANGES_DISPLAY_URL=<a href='http://10.27.216.127:8080/job/nibfe-test-talos-project-production/6/display/redirect?page=changes'>http://10.27.216.127:8080/job/nibfe-test-talos-project-production/6/display/redirect?page=changes</a>\nYARN_VERSION=1.19.1\nNODE_LABELS=production vm-yf-talos-ci28.mt-production-1669601547325\nAWP_OP=wangdeyun\nHUDSON_URL=<a href='http://10.27.216.127:8080/'>http://10.27.216.127:8080/</a>\nAWP_DEPLOY_DOCKER_IMAGE=docker.sankuai.com/talos/node:Erbium-1.9.0\nHOME=/root\nBUILD_URL=<a href='http://10.27.216.127:8080/job/nibfe-test-talos-project-production/6/'>http://10.27.216.127:8080/job/nibfe-test-talos-project-production/6/</a>\nAWP_DOCKER_NAME=\nAWP_GIT_BRANCH_NAME=release/test-canary\nJENKINS_SERVER_COOKIE=durable-3ec7219e1f9240085dd968530f99a583a28f28e562707900a5964d4ab9c5de79\nSOURCEMAP_PUBLIC_URL=//awp-assets.sankuai.com/nibfe/test-talos-project/\nAWP_DEPLOY_ENV=production\nAWP_GIT_REPO=ssh://git@git.sankuai.com/nibfe/test-talos-project.git\nAWP_GIT_KEY=nibfe\nWORKSPACE=/opt/jenkins/workspace/nibfe-test-talos-project-production\nNODE_NAME=vm-yf-talos-ci28.mt-production-1669601547325\nTALOS_JENKINS_NODE=\nAWP_DEPLOY_VERSION=3618477_3c81d48\nRUN_ARTIFACTS_DISPLAY_URL=<a href='http://10.27.216.127:8080/job/nibfe-test-talos-project-production/6/display/redirect?page=artifacts'>http://10.27.216.127:8080/job/nibfe-test-talos-project-production/6/display/redirect?page=artifacts</a>\nAWP_GIT_SLUG=test-talos-project\nCOLLECT_CATKEY_TYPE=1\nEXECUTOR_NUMBER=0\nVUE_APP_OWL_PROJECT=talos-project\nSTAGE_NAME=Git\nRUN_TESTS_DISPLAY_URL=<a href='http://10.27.216.127:8080/job/nibfe-test-talos-project-production/6/display/redirect?page=tests'>http://10.27.216.127:8080/job/nibfe-test-talos-project-production/6/display/redirect?page=tests</a>\nAWP_SERVER_BASE_URL=<a href='http://talos-api.sankuai.com'>http://talos-api.sankuai.com</a>\nBUILD_DISPLAY_NAME=#6\nAWP_DOCKER_PUBLISH=\nTALOS_JENKINS_TAG=production\nJOB_BASE_NAME=nibfe-test-talos-project-production\nAWP_RUNTIME_ENV=production\nHUDSON_HOME=/opt/jenkins\nAWP_JOB_NAME=nibfe-test-talos-project-production\nPATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\nBUILD_ID=6\nBUILD_TAG=jenkins-nibfe-test-talos-project-production-6\nAWP_ASSET_TYPE=hfe-assets-st\nAWP_IS_PARALLEL=true\nJENKINS_URL=<a href='http://10.27.216.127:8080/'>http://10.27.216.127:8080/</a>\nAWP_BUSINESS_TYPE=Rome-Project\nJOB_URL=<a href='http://10.27.216.127:8080/job/nibfe-test-talos-project-production/'>http://10.27.216.127:8080/job/nibfe-test-talos-project-production/</a>\nAWP_COMMENT={\n  \"wiki\": \"<a href='https://km.sankuai.com/page/1109213648'>https://km.sankuai.com/page/1109213648</a>\",\n  \"note\": \"【发布申请人：王德运/wangdeyun】\\nchore: fix\\nchore: fix\\nchore: fix\\nchore: fix\\nchore: fix\\nchore: fix\\nchore: rm mock\\nchore: 删除cp-check\\nfeat: init\\n\",\n  \"version\": \"\"\n}\nAWP_HTML_TYPE=awp-html-in\nBUILD_NUMBER=6\nAWP_GIT_REF_TYPE=branch\nJENKINS_NODE_COOKIE=dddbc98f-71f2-4146-8cf6-79af96ff5aa1\nRUN_DISPLAY_URL=<a href='http://10.27.216.127:8080/job/nibfe-test-talos-project-production/6/display/redirect'>http://10.27.216.127:8080/job/nibfe-test-talos-project-production/6/display/redirect</a>\nHUDSON_SERVER_COOKIE=20d7e8c687a75e94\nAWP_FLOW_TYPE=canary\nJOB_DISPLAY_URL=<a href='http://10.27.216.127:8080/job/nibfe-test-talos-project-production/display/redirect'>http://10.27.216.127:8080/job/nibfe-test-talos-project-production/display/redirect</a>\nCLASSPATH=\nJOB_NAME=nibfe-test-talos-project-production\nPWD=/opt/jenkins/workspace/nibfe-test-talos-project-production\nAWP_APP_ID=9016\nAWP_SUBAPP_ID=0\nAWP_VIP_TYPE=true\nAWP_BUILD_ENV=production\nAWP_JOB_NAME_IDENTIFIER=121b67cc79dc189bc08d67bf5f783ad3\nWORKSPACE_TMP=/opt/jenkins/workspace/nibfe-test-talos-project-production@tmp\nCHROME_BIN=/usr/bin/chromium\nPUBLIC_URL=//awp-assets.sankuai.com/nibfe/test-talos-project/\nAWP_GIT_TAG=\n"
+          },
+          {
+            "name": "Shell Script: git init ${WORKSPACE}",
+            "id": "22",
+            "log": "+ git init /opt/jenkins/workspace/nibfe-test-talos-project-production\nReinitialized existing Git repository in /opt/jenkins/workspace/nibfe-test-talos-project-production/.git/\n"
+          },
+          {
+            "name": "Shell Script: git remote add origin ${AWP_GIT_REPO}",
+            "id": "23",
+            "log": "+ git remote add origin ssh://git@git.sankuai.com/nibfe/test-talos-project.git\nfatal: remote origin already exists.\n"
+          },
+          {
+            "name": "Shell Script: git config remote.origin.url ${AWP_GIT_REPO}",
+            "id": "24",
+            "log": "+ git config remote.origin.url ssh://git@git.sankuai.com/nibfe/test-talos-project.git\n"
+          },
+          {
+            "name": "Shell Script: git fetch origin ${AWP_GIT_BRANCH_NAME} --no-tag --depth=1",
+            "id": "25",
+            "log": "+ git fetch origin release/test-canary --no-tag --depth=1\nWarning: Permanently added the RSA host key for IP address '10.4.14.24' to the list of known hosts.\r\n\u001b[;;33m美团代码仓库(DevTools Code)\u001b[0m                                 代码仓库组\n[连接信息]:         gh-proxy01 =&gt; 950a1dcf-eb15-4c58-a376-6034c62dd370\n[路由信息]:                                 slave-mcode_shard_01-mt-01\n\u001b[;;36m                                   \u001b[0m\nFrom ssh://git.sankuai.com/nibfe/test-talos-project\n * branch            release/test-canary -&gt; FETCH_HEAD\n + b14cac6...0868845 release/test-canary -&gt; origin/release/test-canary  (forced update)\n"
+          },
+          {
+            "name": "Shell Script: git checkout -f",
+            "id": "26",
+            "log": "+ git checkout -f\nYour branch and 'origin/release/test-canary' have diverged,\nand have 1 and 1 different commits each, respectively.\n  (use \"git pull\" to merge the remote branch into yours)\n"
+          },
+          {
+            "name": "Shell Script: git clean -fd",
+            "id": "27",
+            "log": "+ git clean -fd\nRemoving .rome/stone/\n"
+          },
+          {
+            "name": "Shell Script: git checkout ${AWP_GIT_BRANCH_NAME}",
+            "id": "28",
+            "log": "+ git checkout release/test-canary\nAlready on 'release/test-canary'\nYour branch and 'origin/release/test-canary' have diverged,\nand have 1 and 1 different commits each, respectively.\n  (use \"git pull\" to merge the remote branch into yours)\n"
+          },
+          {
+            "name": "Shell Script: git reset --hard origin/${AWP_GIT_BRANCH_NAME}",
+            "id": "29",
+            "log": "+ git reset --hard origin/release/test-canary\nHEAD is now at 0868845 chore: fix\n"
+          },
+          {
+            "name": "Shell Script: git submodule deinit --all -f",
+            "id": "30",
+            "log": "+ git submodule deinit --all -f\n"
+          },
+          {
+            "name": "Shell Script: git submodule init",
+            "id": "31",
+            "log": "+ git submodule init\n"
+          },
+          {
+            "name": "Shell Script: git submodule update",
+            "id": "32",
+            "log": "+ git submodule update\n"
+          },
+          {
+            "name": "Shell Script: git config --global user.email \"hfe_stash@meituan.com\"",
+            "id": "33",
+            "log": "+ git config --global user.email hfe_stash@meituan.com\n"
+          },
+          {
+            "name": "Shell Script: git config --global user.name \"hfe_stash\"",
+            "id": "34",
+            "log": "+ git config --global user.name hfe_stash\n"
+          },
+          {
+            "name": "Shell Script: STAGE_NAME=${STAGE_NAME} DESCRIPTION=\"下载代码成功\" STAGE_STATUS=success node /root/jenkins/report-stage.js",
+            "id": "37",
+            "log": "+ STAGE_NAME=Git DESCRIPTION=下载代码成功 STAGE_STATUS=success node /root/jenkins/report-stage.js\n"
+          }
+        ],
+        "callback": {
+          "description": "下载代码成功",
+          "jobName": "nibfe-test-talos-project-production",
+          "buildNumber": "6"
+        },
+        "created_at": "2022-11-28T09:11:31.537Z",
+        "updated_at": "2022-11-28T09:11:49.000Z"
+      },
+      {
+        "id": 27543101,
+        "flow_id": 3618477,
+        "plugin_id": 3,
+        "plugin_name": "Yarn",
+        "op": "",
+        "status": "success",
+        "log": [
+          {
+            "name": "Shell Script: ",
+            "id": "44",
+            "log": "+ echo 151.101.108.133   raw.githubusercontent.com\n+ cat /etc/hosts\n127.0.0.1\tlocalhost\n::1\tlocalhost ip6-localhost ip6-loopback\nfe00::0\tip6-localnet\nff00::0\tip6-mcastprefix\nff02::1\tip6-allnodes\nff02::2\tip6-allrouters\n172.17.0.2\t1fe3eedaef98\n151.101.108.133   raw.githubusercontent.com\n+ cacheType=\n+ cd .\n+ makeCacheType\n+ [ -e yarn.lock ]\n+ cacheType=yarn-cache\n+ [ -e node_modules ]\n+ [ -e /bin/get-cache ]\n+ get-cache yarn-cache\nget-cache 当前执行目录: /opt/jenkins/workspace/nibfe-test-talos-project-production\n没有node_modules 获取缓存\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r100 99934  100 99934    0     0  1598k      0 --:--:-- --:--:-- --:--:-- 1626k\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r100  254k  100  254k    0     0  3608k      0 --:--:-- --:--:-- --:--:-- 3631k\n缓存类型： yarn-cache\nkey: 9016-production--yarn-cache\n无可用缓存\n(node:399) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.\n找不到压缩文件：/root/jenkins/cache/9016-production--yarn-cache.tgz\nnpm-cache\nyarn-cache\n+ timeout install\n+ waitfor=600\n+ command=install\n+ sleeppid=387\n+ commandpid=419+ \ninstall\n+ [ yarn-cache = yarn-cache ]\n+ yarn install --production=false\n+ watchdog=420\n+ wait 419\n+ sleep 600\nyarn install v1.22.19\n[1/4] Resolving packages...\n[2/4] Fetching packages...\nwarning vscode-languageclient@7.0.0: The engine \"vscode\" appears to be invalid.\n[3/4] Linking dependencies...\nwarning \"@hfe/vue-cli-plugin-stylelint &gt; stylelint-config-recommended-scss@3.3.0\" has incorrect peer dependency \"stylelint@^8.3.0 || ^9.0.0 || ^10.0.0\".\nwarning \"@hfe/vue-cli-plugin-stylelint &gt; stylelint-config-standard@18.3.0\" has incorrect peer dependency \"stylelint@^8.3.0 || ^9.0.0 || ^10.0.0\".\nwarning \"@hfe/vue-cli-plugin-stylelint &gt; stylelint-scss@3.5.4\" has incorrect peer dependency \"stylelint@^8.0.0 || ^9.0.0\".\nwarning \"@hfe/vue-cli-plugin-stylelint &gt; stylelint-webpack-plugin@2.1.0\" has unmet peer dependency \"webpack@^4.0.0 || ^5.0.0\".\nwarning \"@hfe/vue-cli-plugin-stylelint &gt; stylelint-config-recommended-scss &gt; stylelint-config-recommended@2.2.0\" has incorrect peer dependency \"stylelint@^8.3.0 || ^9.0.0 || ^10.0.0\".\nwarning \"@nibfe/eslint-config &gt; eslint-plugin-react-hooks-unreliable-deps@1.0.0\" has unmet peer dependency \"eslint-plugin-react-hooks@^3.0.0 || ^4.0.0\".\nwarning \" &gt; @nibfe/vue-cli-plugin-project-build@2.11.3\" has unmet peer dependency \"webpack@4.x.x || 5.x.x\".\nwarning \"@nibfe/vue-cli-plugin-project-build &gt; hard-source-webpack-plugin@0.13.1\" has unmet peer dependency \"webpack@*\".\nwarning \"@nibfe/vue-cli-plugin-stone &gt; url-loader@4.1.1\" has unmet peer dependency \"webpack@^4.0.0 || ^5.0.0\".\nwarning \"@nibfe/vue-cli-plugin-vite &gt; vite-plugin-style-import@1.1.1\" has unmet peer dependency \"vite@&gt;=2.0.0\".\nwarning \"@nibfe/vue-cli-plugin-vite &gt; vite-plugin-windicss@0.15.10\" has unmet peer dependency \"vite@^2.0.1\".\nwarning \"@nibfe/vue-cli-plugin-vite &gt; vue-cli-plugin-vite &gt; vite-plugin-vue-cli@1.4.1\" has incorrect peer dependency \"vite@~2.0.0\".\nwarning \"@nibfe/vue-cli-plugin-zone &gt; speed-measure-webpack-plugin@1.3.3\" has unmet peer dependency \"webpack@^1 || ^2 || ^3 || ^4\".\nwarning \" &gt; sass-loader@8.0.2\" has unmet peer dependency \"webpack@^4.36.0 || ^5.0.0\".\n[4/4] Building fresh packages...\nDone in 71.83s.\n+ commandcode=0\n+ echo 依赖安装执行状态码上报：0\n依赖安装执行状态码上报：0\n+ [ 0 -eq 1 ]\n+ [ 0 -eq 137 ]\n+ kill -9 420\n"
+          },
+          {
+            "name": "Shell Script: STAGE_NAME=${STAGE_NAME} DESCRIPTION=\"安装依赖成功\" STAGE_STATUS=success node /root/jenkins/report-stage.js",
+            "id": "47",
+            "log": "+ STAGE_NAME=Yarn DESCRIPTION=安装依赖成功 STAGE_STATUS=success node /root/jenkins/report-stage.js\n"
+          }
+        ],
+        "callback": {
+          "description": "安装依赖成功",
+          "jobName": "nibfe-test-talos-project-production",
+          "buildNumber": "6"
+        },
+        "created_at": "2022-11-28T09:11:49.785Z",
+        "updated_at": "2022-11-28T09:13:04.000Z"
+      },
+      {
+        "id": 27543245,
+        "flow_id": 3618477,
+        "plugin_id": 372,
+        "plugin_name": "Rome-Check",
+        "op": "",
+        "status": "success",
+        "log": [
+          {
+            "name": "Shell Script: curl https://awp-assets.sankuai.com/nibfe/rome-cli/rome-check/index.js | node",
+            "id": "54",
+            "log": "+ curl <a href='https://awp-assets.sankuai.com/nibfe/rome-cli/rome-check/index.js'>https://awp-assets.sankuai.com/nibfe/rome-cli/rome-check/index.js</a>\n+ node\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r 51 29.1M   51 14.9M    0     0  35.8M      0 --:--:-- --:--:-- --:--:-- 35.8M\r100 29.1M  100 29.1M    0     0  50.4M      0 --:--:-- --:--:-- --:--:-- 50.4M\n卡控类型： vue研发框架工程\n ┣━ bin\n ┃ ┣━ vite\n ┃ ┗━ talos_build\n ┣━ config\n ┃ ┣━ vue2to3.eslintrc.js\n ┃ ┣━ vue.eslintrc.js\n ┃ ┣━ typescript.eslintrc.js\n ┃ ┗━ clean-code.eslintrc.js\n ┣━ public\n ┃ ┣━ index.html\n ┃ ┗━ favicon.ico\n ┣━ src\n ┃ ┣━ api\n ┃ ┃ ┗━ talos.ts\n ┃ ┣━ assets\n ┃ ┃ ┗━ logo.png\n ┃ ┣━ components\n ┃ ┃ ┣━ hello-world\n ┃ ┃ ┃ ┗━ index.vue\n ┃ ┣━ composables\n ┃ ┃ ┣━ use-hello-world.ts\n ┃ ┃ ┗━ index.ts\n ┃ ┣━ lib\n ┃ ┃ ┣━ mock-http.ts\n ┃ ┃ ┣━ http.ts\n ┃ ┃ ┗━ axios.ts\n ┃ ┣━ pages\n ┃ ┃ ┣━ index\n ┃ ┃ ┃ ┣━ router\n ┃ ┃ ┃ ┃ ┗━ index.ts\n ┃ ┃ ┃ ┣━ store\n ┃ ┃ ┃ ┃ ┗━ index.ts\n ┃ ┃ ┃ ┣━ views\n ┃ ┃ ┃ ┃ ┣━ index.vue\n ┃ ┃ ┃ ┃ ┗━ about.vue\n ┃ ┃ ┃ ┣━ main.ts\n ┃ ┃ ┃ ┗━ app.vue\n ┃ ┃ ┣━ subpage\n ┃ ┃ ┃ ┣━ router\n ┃ ┃ ┃ ┃ ┗━ index.ts\n ┃ ┃ ┃ ┣━ store\n ┃ ┃ ┃ ┃ ┗━ index.ts\n ┃ ┃ ┃ ┣━ views\n ┃ ┃ ┃ ┃ ┣━ index.vue\n ┃ ┃ ┃ ┃ ┗━ about.vue\n ┃ ┃ ┃ ┣━ main.ts\n ┃ ┃ ┃ ┗━ app.vue\n ┃ ┣━ plugins\n ┃ ┃ ┣━ mtd.ts\n ┃ ┃ ┗━ composition-api.ts\n ┃ ┣━ styles\n ┃ ┃ ┗━ global.scss\n ┃ ┣━ types\n ┃ ┃ ┣━ shims-vue.d.ts\n ┃ ┃ ┣━ shims-tsx.d.ts\n ┃ ┃ ┣━ index.d.ts\n ┃ ┃ ┗━ global.d.ts\n ┃ ┗━ global.ts\n ┣━ yarn.lock\n ┣━ vue.config.js\n ┣━ tsconfig.json\n ┣━ package.json\n ┣━ babel.config.js\n ┣━ README.md\n ┣━ .npmrc\n ┣━ .gitignore\n ┣━ .eslintrc.js\n ┣━ .eslintignore\n ┗━ .editorconfig\n----------------------    目录结构符合卡控标准    ----------------------\n-  正在进行依赖变更分析，请等待...\n\n【研发框架依赖变更风险提示】检测到核心依赖版本发生变更,可能风险请通过下方链接查看：\n<a href='https://w.sankuai.com/nibfe/infrastructure-web/diff-report/index.html?diffDependencies%3D%40ss%2Fmtd-vue%3A0.3.20_0.3.36'>https://w.sankuai.com/nibfe/infrastructure-web/diff-report/index.html?diffDependencies%3D%40ss%2Fmtd-vue%3A0.3.20_0.3.36</a>\n插件回调触发成功\n【基建统一管理】@ss/mtd-vue 实际使用 package.json 中单独安装的版本， @nibfe/vue-cli-plugin-stone 管理的该基建版本不生效\n【基建统一管理】axios 实际使用 stone 中管控基建的版本，在 package.json 中单独安装的版本不生效，请通过 @nibfe/vue-cli-plugin-stone 管理项目基建，无需单独安装 axios\n【基建统一管理】vue-router 实际使用 stone 中管控基建的版本，在 package.json 中单独安装的版本不生效，请通过 @nibfe/vue-cli-plugin-stone 管理项目基建，无需单独安装 vue-router\n【基建统一管理】vuex 实际使用 stone 中管控基建的版本，在 package.json 中单独安装的版本不生效，请通过 @nibfe/vue-cli-plugin-stone 管理项目基建，无需单独安装 vuex\n----------------------      依赖符合卡控标准      ----------------------\n----------------------      全部符合卡控标准      ----------------------\n"
+          },
+          {
+            "name": "Shell Script: STAGE_NAME=${STAGE_NAME} DESCRIPTION=\"流程成功\" STAGE_STATUS=success node /root/jenkins/report-stage.js",
+            "id": "57",
+            "log": "+ STAGE_NAME=Rome-Check DESCRIPTION=流程成功 STAGE_STATUS=success node /root/jenkins/report-stage.js\n"
+          }
+        ],
+        "callback": {
+          "description": "流程成功",
+          "globalParams": {
+            "approveMsg": "",
+            "skipDXApprove": "true"
+          },
+          "jobName": "nibfe-test-talos-project-production",
+          "buildNumber": "6"
+        },
+        "created_at": "2022-11-28T09:13:04.242Z",
+        "updated_at": "2022-11-28T09:13:12.000Z"
+      },
+      {
+        "id": 27543260,
+        "flow_id": 3618477,
+        "plugin_id": 4,
+        "plugin_name": "Lint",
+        "op": "",
+        "status": "success",
+        "log": [
+          {
+            "name": "Shell Script: cd ${projectRoot:-.} && npm run lint",
+            "id": "64",
+            "log": "+ cd .\n+ npm run lint\n\n&gt; test-talos-project@0.1.0 lint /opt/jenkins/workspace/nibfe-test-talos-project-production\n&gt; vue-cli-service lint --mode production\n\nproduction 环境暂不支持按需构建，默认全量发布\n【Rome基建】: 以下核心依赖已被默认安装和版本管控：@dp/watermark(v1.1.2)，@gfe/vue-lx-watcher(v1.1.0)，@hfe/dyna(v0.1.10)，@mtfe/sso-web(v1.1.15)，@nibfe/axios-wrapper(v0.5.1)，@ss/mtd-vue-mobile(v^0.1.11)，axios(v0.19.2)，vue(v2.6.11)，vue-router(v3.0.7)，vue-template-compiler(v2.6.11)，vuex(v3.1.3)，@wmfe/phoenix(v1.0.0)\n【Rome基建】: 以下核心依赖已安装用户自定义版本：@ss/mtd-vue(v^0.3.16)\n【Rome基建】: 埋点(lx)已成功通过CDN方式接入\n[Zone]: v1.7.1\n\n[Zone]: package.json#name 设置的与包名不一致，有构建异常风险，将在下一 minor 版本后禁用\n- test-talos-project vs nibfe-test-talos-project-production\n\n DONE  No lint errors found!\n"
+          },
+          {
+            "name": "Shell Script: STAGE_NAME=${STAGE_NAME} DESCRIPTION=\"Lint 检测通过\" STAGE_STATUS=success node /root/jenkins/report-stage.js",
+            "id": "67",
+            "log": "+ STAGE_NAME=Lint DESCRIPTION=Lint 检测通过 STAGE_STATUS=success node /root/jenkins/report-stage.js\n"
+          }
+        ],
+        "callback": {
+          "description": "Lint 检测通过",
+          "jobName": "nibfe-test-talos-project-production",
+          "buildNumber": "6"
+        },
+        "created_at": "2022-11-28T09:13:12.408Z",
+        "updated_at": "2022-11-28T09:13:19.000Z"
+      },
+      {
+        "id": 27543276,
+        "flow_id": 3618477,
+        "plugin_id": 5,
+        "plugin_name": "Test",
+        "op": "",
+        "status": "success",
+        "log": [
+          {
+            "name": "Shell Script: cd ${projectRoot:-.} && npm run test",
+            "id": "74",
+            "log": "+ cd .\n+ npm run test\n\n&gt; test-talos-project@0.1.0 test /opt/jenkins/workspace/nibfe-test-talos-project-production\n&gt; yarn run test:unit\n\nyarn run v1.22.19\n$ vue-cli-service test:unit\nproduction 环境暂不支持按需构建，默认全量发布\n【Rome基建】: 以下核心依赖已被默认安装和版本管控：@dp/watermark(v1.1.2)，@gfe/vue-lx-watcher(v1.1.0)，@hfe/dyna(v0.1.10)，@mtfe/sso-web(v1.1.15)，@nibfe/axios-wrapper(v0.5.1)，@ss/mtd-vue-mobile(v^0.1.11)，axios(v0.19.2)，vue(v2.6.11)，vue-router(v3.0.7)，vue-template-compiler(v2.6.11)，vuex(v3.1.3)，@wmfe/phoenix(v1.0.0)\n【Rome基建】: 以下核心依赖已安装用户自定义版本：@ss/mtd-vue(v^0.3.16)\n【Rome基建】: 埋点(lx)已成功通过CDN方式接入\n[Zone]: v1.7.1\n\n[Zone]: package.json#name 设置的与包名不一致，有构建异常风险，将在下一 minor 版本后禁用\n- test-talos-project vs nibfe-test-talos-project-production\n\nts-jest[versions] (WARN) Version 4.1.6 of typescript installed has not been tested with ts-jest. If you're experiencing issues, consider using a supported version (&gt;=2.7.0 &lt;4.0.0). Please do not report issues in ts-jest if you are using unsupported versions.\nts-jest[versions] (WARN) Version 4.1.6 of typescript installed has not been tested with ts-jest. If you're experiencing issues, consider using a supported version (&gt;=2.7.0 &lt;4.0.0). Please do not report issues in ts-jest if you are using unsupported versions.\nPASS tests/unit/composables/use-hello-world.spec.ts\nPASS tests/unit/components/hello-world.spec.ts\n  ● Console\n\n    console.error node_modules/vue/dist/vue.runtime.common.dev.js:4548\n      [Vue warn]: The setup binding property \"message\" is already declared.\n      \n      found in\n      \n      ---&gt; &lt;HelloWorld&gt;\n             &lt;Root&gt;\n\n\nTest Suites: 2 passed, 2 total\nTests:       2 passed, 2 total\nSnapshots:   0 total\nTime:        5.527s\nRan all test suites.\nDone in 9.97s.\n"
+          },
+          {
+            "name": "Shell Script: STAGE_NAME=${STAGE_NAME} DESCRIPTION=\"Test 检测通过\" STAGE_STATUS=success node /root/jenkins/report-stage.js",
+            "id": "77",
+            "log": "+ STAGE_NAME=Test DESCRIPTION=Test 检测通过 STAGE_STATUS=success node /root/jenkins/report-stage.js\n"
+          }
+        ],
+        "callback": {
+          "description": "Test 检测通过",
+          "jobName": "nibfe-test-talos-project-production",
+          "buildNumber": "6"
+        },
+        "created_at": "2022-11-28T09:13:19.982Z",
+        "updated_at": "2022-11-28T09:13:31.000Z"
+      },
+      {
+        "id": 27543298,
+        "flow_id": 3618477,
+        "plugin_id": 6,
+        "plugin_name": "Build",
+        "op": "",
+        "status": "success",
+        "log": [
+          {
+            "name": "Shell Script: #!/bin/bash\n\ncd ${projectRoot:-.}\nrm -rf build/\n\n\n\nif [ ! -d node_modules/.cache ];then\n  echo 'node_modules/.cache  not  exist'\n  if [ -e /bin/get-cache ];\n    then\n        get-cache build-cache\n    fi\n  \nelse\n  echo 'node_modules/.cache  exist'\n  ls node_modules/.cache\nfi\n\nif [ \"`jq \".scripts.build\" package.json`\" = \"null\" ]; then \n  if [ \"$AWP_DEPLOY_ENV\" = \"production\" ]; then\n    yarn run gulp build\n  else\n    yarn run gulp build:prepub\n  fi\nelse\n  yarn run build\nfi\n",
+            "id": "84",
+            "log": "node_modules/.cache  not  exist\nget-cache 当前执行目录: /opt/jenkins/workspace/nibfe-test-talos-project-production\n没有node_modules 获取缓存\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r100 99934  100 99934    0     0  1895k      0 --:--:-- --:--:-- --:--:-- 1913k\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r100  254k  100  254k    0     0  3987k      0 --:--:-- --:--:-- --:--:-- 4035k\n缓存类型： build-cache\nkey: 9016-production-121b67cc79dc189bc08d67bf5f783ad3-build-cache\n无可用缓存\n(node:1105) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.\n找不到压缩文件：/root/jenkins/cache/9016-production-121b67cc79dc189bc08d67bf5f783ad3-build-cache.tgz\nnpm-cache\nyarn-cache\nyarn run v1.22.19\n$ node ./bin/talos_build\nrunning: vue-cli-service build --mode production\nproduction 环境暂不支持按需构建，默认全量发布\n【Rome基建】: 以下核心依赖已被默认安装和版本管控：@dp/watermark(v1.1.2)，@gfe/vue-lx-watcher(v1.1.0)，@hfe/dyna(v0.1.10)，@mtfe/sso-web(v1.1.15)，@nibfe/axios-wrapper(v0.5.1)，@ss/mtd-vue-mobile(v^0.1.11)，axios(v0.19.2)，vue(v2.6.11)，vue-router(v3.0.7)，vue-template-compiler(v2.6.11)，vuex(v3.1.3)，@wmfe/phoenix(v1.0.0)\n【Rome基建】: 以下核心依赖已安装用户自定义版本：@ss/mtd-vue(v^0.3.16)\n【Rome基建】: 埋点(lx)已成功通过CDN方式接入\n[Zone]: v1.7.1\n\n[Zone]: package.json#name 设置的与包名不一致，有构建异常风险，将在下一 minor 版本后禁用\n- test-talos-project vs nibfe-test-talos-project-production\n\n\n-  Building for production...\n WARNING  Compiled with 2 warnings5:13:54 PM\n\n warning  \n\nasset size limit: The following asset(s) exceed the recommended size limit (244 KiB).\nThis can impact web performance.\nAssets: \n  js/chunk-libs.067fcc9e.js (452 KiB)\n\n warning  \n\nentrypoint size limit: The following entrypoint(s) combined asset size exceeds the recommended limit (244 KiB). This can impact web performance.\nEntrypoints:\n  index (894 KiB)\n      js/chunk-vendors.735b3b0a.js\n      css/chunk-libs.223bf721.css\n      js/chunk-libs.067fcc9e.js\n      css/chunk-common.790a6fa6.css\n      js/chunk-common.796c9a86.js\n      css/index.55998ae0.css\n      js/index.ef2e6826.js\n  subpage (894 KiB)\n      js/chunk-vendors.735b3b0a.js\n      css/chunk-libs.223bf721.css\n      js/chunk-libs.067fcc9e.js\n      css/chunk-common.790a6fa6.css\n      js/chunk-common.796c9a86.js\n      css/subpage.55998ae0.css\n      js/subpage.c311f8d9.js\n\n\n  File                                   Size              Gzipped\n\n  build/js/chunk-libs.067fcc9e.js        452.35 KiB        111.93 KiB\n  build/js/chunk-vendors.735b3b0a.js     173.65 KiB        60.79 KiB\n  build/js/chunk-common.796c9a86.js      63.00 KiB         18.98 KiB\n  build/js/lazy-index.8357a1ea.js        6.12 KiB          1.62 KiB\n  build/js/subpage.c311f8d9.js           4.26 KiB          1.94 KiB\n  build/js/index.ef2e6826.js             4.26 KiB          1.93 KiB\n  build/js/lazy-about.bf409f3c.js        0.66 KiB          0.27 KiB\n  build/css/chunk-libs.223bf721.css      197.82 KiB        28.84 KiB\n  build/css/chunk-common.790a6fa6.css    2.56 KiB          1.05 KiB\n  build/css/index.55998ae0.css           0.25 KiB          0.19 KiB\n  build/css/subpage.55998ae0.css         0.25 KiB          0.19 KiB\n  build/css/lazy-index.a0cc21a2.css      0.17 KiB          0.13 KiB\n\n  Images and other types of assets omitted.\n\n DONE  Build complete. The build directory is ready to be deployed.\n INFO  Check out deployment instructions at <a href='https://cli.vuejs.org/guide/deployment.html'>https://cli.vuejs.org/guide/deployment.html</a>\n      \n[ talos build production success ]\nDone in 22.72s.\n"
+          },
+          {
+            "name": "Shell Script: STAGE_NAME=${STAGE_NAME} DESCRIPTION=\"构建成功\" STAGE_STATUS=success node /root/jenkins/report-stage.js",
+            "id": "87",
+            "log": "+ STAGE_NAME=Build DESCRIPTION=构建成功 STAGE_STATUS=success node /root/jenkins/report-stage.js\n"
+          }
+        ],
+        "callback": {
+          "description": "构建成功",
+          "jobName": "nibfe-test-talos-project-production",
+          "buildNumber": "6"
+        },
+        "created_at": "2022-11-28T09:13:31.585Z",
+        "updated_at": "2022-11-28T09:13:59.000Z"
+      },
+      {
+        "id": 27543335,
+        "flow_id": 3618477,
+        "plugin_id": 158,
+        "plugin_name": "Standards",
+        "op": "",
+        "status": "success",
+        "log": [
+          {
+            "name": "Shell Script: curl https://awp-assets.sankuai.com/hfe/talos-plugins/services/standards/index.js | node",
+            "id": "94",
+            "log": "+ curl <a href='https://awp-assets.sankuai.com/hfe/talos-plugins/services/standards/index.js'>https://awp-assets.sankuai.com/hfe/talos-plugins/services/standards/index.js</a>\n+ node\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r100 2080k  100 2080k    0     0  11.0M      0 --:--:-- --:--:-- --:--:-- 11.1M\n当前检测目录：配置无效或无配置，默认在项目根目录执行检测\n【到店前端标准化规范】<a href='https://km.sankuai.com/page/143886652'>https://km.sankuai.com/page/143886652</a>\n【基础规范】检测开始\n✅【标准化 production 环境发布分支检测】检测通过\n\n(node:1455) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.\n✅【标准化依赖检测 &amp; 上报】保存依赖数据成功；保存标准化水平信息成功；标准化依赖数据检测完成，已达标，详情：\n  技术栈（Vue/React）标准化现状：已达标\n  组件库（MTDUI）标准化现状：已达标\n  代码准入标准化覆盖率：100%\n\n✅【标准化 lint 规则检测】检测通过\n 检测到的配置文件的目录为 ./.eslintrc.js\n\n✅【标准化锁版本检测】锁版本检测通过\n\n✅【标准化配置项检测】检测标准化工具链：@hfe/common-cli-plugin-flow-standards 是否已安装\n  【推荐】npm scripts 检测：通过\n  【推荐】prettier 配置检测：通过\n  【强制】gitHooks 配置检测：通过\n\n✅【检测内网域名】跳过检测\n\n✅【npm 包禁用版本检测】无禁用版本\n\n【基础规范】检测结束，耗时：0.606s\n【业务规范】检测开始\n【业务规范】检测结束，耗时：0s\n 如遇问题，可在【标准化客服群】进行询问，直达地址：<a href='https://x.sankuai.com/chat/64014161353?type=groupchat'>https://x.sankuai.com/chat/64014161353?type=groupchat</a>\n"
+          },
+          {
+            "name": "Shell Script: STAGE_NAME=${STAGE_NAME} DESCRIPTION=\"流程成功\" STAGE_STATUS=success node /root/jenkins/report-stage.js",
+            "id": "97",
+            "log": "+ STAGE_NAME=Standards DESCRIPTION=流程成功 STAGE_STATUS=success node /root/jenkins/report-stage.js\n"
+          }
+        ],
+        "callback": {
+          "description": "流程成功",
+          "jobName": "nibfe-test-talos-project-production",
+          "buildNumber": "6"
+        },
+        "created_at": "2022-11-28T09:13:59.173Z",
+        "updated_at": "2022-11-28T09:14:01.000Z"
+      },
+      {
+        "id": 27543339,
+        "flow_id": 3618477,
+        "plugin_id": 89,
+        "plugin_name": "POM-MIDDLEWARE",
+        "op": "",
+        "status": "success",
+        "log": [
+          {
+            "name": "Shell Script: \n  echo \"10.4.5.56     cm.sankuai.com\" >> /etc/hosts\n  cd ${projectRoot:-.}\n  curl https://awp-assets.sankuai.com/nibfe/talos-plugins-code-scanner/pomMiddleware.js | node\n    echo \"remainder=\\$((AWP_FLOW_ID % 10))\necho \"remainder \\${remainder}\"\nif (( \\$remainder >= 0)); then\n  curl https://s3plus.sankuai.com/v1/mss_55f12fa2cfcf4ec080d69868a087b2c0/devtools-common/talos.997a3ff1a60305e016db.bundle.js | node\n  else echo 'no check'\nfi\" | bash\n",
+            "id": "104",
+            "log": "+ echo 10.4.5.56     cm.sankuai.com\n+ cd .\n+ curl <a href='https://awp-assets.sankuai.com/nibfe/talos-plugins-code-scanner/pomMiddleware.js'>https://awp-assets.sankuai.com/nibfe/talos-plugins-code-scanner/pomMiddleware.js</a>\n+ node\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r100 1439k  100 1439k    0     0  12.1M      0 --:--:-- --:--:-- --:--:-- 12.2M\nappenv {\"env\":\"prod\",\"deployenv\":\"product\",\"zkserver\":\"lion-zk.vip.sankuai.com:2181\"}\n*** 执行 NPM 采集 逻辑 ***\n欢迎进入Pom系统查询依赖: pom.sankuai.com\ncwd path&gt; /opt/jenkins/workspace/nibfe-test-talos-project-production/package.json\n当前执行环境TALOS: ssh://git@git.sankuai.com/nibfe/test-talos-project.git 9016 .\ncm 打点.请实时查看下结果,防止错打,漏打\nenv:beta\nsource:nibfe~test-talos-project\nvalue: [\n  {\n    target: '@hfe/common-cli-plugin-flow-standards',\n    text: '{\"version\":\"1.3.12\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@hfe/vue-cli-plugin-axios',\n    text: '{\"version\":\"latest\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@hfe/vue-cli-plugin-mpa',\n    text: '{\"version\":\"^4.0.3\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@hfe/vue-cli-plugin-mtd',\n    text: '{\"version\":\"^4.0.1\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@hfe/vue-cli-plugin-setup',\n    text: '{\"version\":\"^4.0.1\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@hfe/vue-cli-plugin-stylelint',\n    text: '{\"version\":\"^4.0.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@hfe/vue-cli-plugin-talos-sourcemap',\n    text: '{\"version\":\"^1.0.2\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@nibfe/eslint-config',\n    text: '{\"version\":\"^1.0.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@nibfe/prettier-config',\n    text: '{\"version\":\"2.0.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@nibfe/stylelint-config',\n    text: '{\"version\":\"^1.0.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@nibfe/vue-cli-plugin-auto-routing',\n    text: '{\"version\":\"^3.8.2\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@nibfe/vue-cli-plugin-generator',\n    text: '{\"version\":\"^4.0.1\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@nibfe/vue-cli-plugin-mock',\n    text: '{\"version\":\"^4.0.1\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@nibfe/vue-cli-plugin-project-build',\n    text: '{\"version\":\"2.11.3\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@nibfe/vue-cli-plugin-stone',\n    text: '{\"version\":\"^0.7.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@nibfe/vue-cli-plugin-vite',\n    text: '{\"version\":\"^1.6.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@nibfe/vue-cli-plugin-zone',\n    text: '{\"version\":\"^1.7.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@types/jest',\n    text: '{\"version\":\"^24.0.19\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@types/lodash',\n    text: '{\"version\":\"4.14.149\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@typescript-eslint/eslint-plugin',\n    text: '{\"version\":\"4.27.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@typescript-eslint/parser',\n    text: '{\"version\":\"4.27.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@vue/cli-plugin-babel',\n    text: '{\"version\":\"~4.5.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@vue/cli-plugin-eslint',\n    text: '{\"version\":\"^4.5.13\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@vue/cli-plugin-router',\n    text: '{\"version\":\"^4.5.13\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@vue/cli-plugin-typescript',\n    text: '{\"version\":\"^4.5.13\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@vue/cli-plugin-unit-jest',\n    text: '{\"version\":\"^4.5.13\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@vue/cli-plugin-vuex',\n    text: '{\"version\":\"^4.5.13\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@vue/cli-service',\n    text: '{\"version\":\"~4.5.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@vue/eslint-config-prettier',\n    text: '{\"version\":\"^6.0.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@vue/eslint-config-typescript',\n    text: '{\"version\":\"^7.0.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@vue/test-utils',\n    text: '{\"version\":\"^1.0.3\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: 'eslint',\n    text: '{\"version\":\"^6.7.2\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: 'eslint-plugin-prettier',\n    text: '{\"version\":\"^3.3.1\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: 'eslint-plugin-vue',\n    text: '{\"version\":\"7.9.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: 'lint-staged',\n    text: '{\"version\":\"^9.5.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: 'prettier',\n    text: '{\"version\":\"^2.2.1\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: 'sass',\n    text: '{\"version\":\"^1.26.5\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: 'sass-loader',\n    text: '{\"version\":\"^8.0.2\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: 'typescript',\n    text: '{\"version\":\"~4.1.5\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: 'vue-template-compiler',\n    text: '{\"version\":\"^2.6.11\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: 'yorkie',\n    text: '{\"version\":\"2.0.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@ss/mtd-vue',\n    text: '{\"version\":\"^0.3.16\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: '@vue/composition-api',\n    text: '{\"version\":\"1.0.0-beta.17\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: 'axios',\n    text: '{\"version\":\"^0.19.2\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: 'core-js',\n    text: '{\"version\":\"^3.6.5\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: 'lodash',\n    text: '{\"version\":\"4.17.15\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: 'vue',\n    text: '{\"version\":\"^2.6.11\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: 'vue-router',\n    text: '{\"version\":\"^3.2.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  },\n  {\n    target: 'vuex',\n    text: '{\"version\":\"^3.4.0\",\"author\":\"wangdeyun\",\"type\":\"talos\"}'\n  }\n]\nchannel:ci\n{\"code\":200,\"data\":{\"msg\":\"成功插入49条数据\"}}\n--- 上报RPC项目依赖信息成功 ---\n原有pom 采集逻辑执行完毕，开始执行 luna 采集\npom: 231.209ms\n*** 执行 NPM 采集 逻辑 ***\n当前执行环境TALOS: ssh://git@git.sankuai.com/nibfe/test-talos-project.git 9016 .\n项目快照采集完成✅！\npackage信息上报结果完成✅： { code: 200, data: true }\n项目快照采集完成✅！\npackage信息上报结果完成✅： { code: 200, data: true }\nluna 执行完毕，开始执行 catkey 采集\nluna: 291.569ms\n{\"code\":998,\"data\":{},\"error\":\"execute error\"}\n--- 上报catKEY和项目名对应关系信息失败 --- {\"code\":998,\"data\":{},\"error\":\"execute error\"}\ncatkey 采集完毕\ncat: 74.747ms\n运行结束了 ✅\n+ echo remainder=$((AWP_FLOW_ID % 10))\necho remainder ${remainder}\nif (( $remainder &gt;= 0)); then\n  curl <a href='https://s3plus.sankuai.com/v1/mss_55f12fa2cfcf4ec080d69868a087b2c0/devtools-common/talos.997a3ff1a60305e016db.bundle.js'>https://s3plus.sankuai.com/v1/mss_55f12fa2cfcf4ec080d69868a087b2c0/devtools-common/talos.997a3ff1a60305e016db.bundle.js</a> | node\n  else echo 'no check'\nfi\n+ bash\nremainder 7\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r100  313k  100  313k    0     0  4184k      0 --:--:-- --:--:-- --:--:-- 4241k\n前端JS处理耗时: 236.708ms\n\n需要检测的包有2117个\n\n依赖收集数据开始上报\n包依赖分析接口请求耗时: 242.924ms\n/opt/jenkins/workspace/nibfe-test-talos-project-production/.plus/metadata/dependenciestree.json\n创建报告，并写入文件成功，地址/opt/jenkins/workspace/nibfe-test-talos-project-production/.plus/metadata/dependenciestree.json\n--&gt;&gt; 包风险检查开始啦\n--------------------本项目无需治理--------------------\n--&gt;&gt; 包风险检查结束\n"
+          },
+          {
+            "name": "Shell Script: STAGE_NAME=${STAGE_NAME} DESCRIPTION=\"流程成功\" STAGE_STATUS=success node /root/jenkins/report-stage.js",
+            "id": "107",
+            "log": "+ STAGE_NAME=POM-MIDDLEWARE DESCRIPTION=流程成功 STAGE_STATUS=success node /root/jenkins/report-stage.js\n"
+          }
+        ],
+        "callback": {
+          "description": "流程成功",
+          "jobName": "nibfe-test-talos-project-production",
+          "buildNumber": "6"
+        },
+        "created_at": "2022-11-28T09:14:01.317Z",
+        "updated_at": "2022-11-28T09:14:04.000Z"
+      },
+      {
+        "id": 27543346,
+        "flow_id": 3618477,
+        "plugin_id": 9,
+        "plugin_name": "Upload",
+        "op": "",
+        "status": "success",
+        "log": [
+          {
+            "name": "Shell Script: cd ${projectRoot:-.} && zip -r /root/jenkins/build/build.zip build/",
+            "id": "114",
+            "log": "+ cd .\n+ zip -r /root/jenkins/build/build.zip build/\n  adding: build/ (stored 0%)\n  adding: build/index.html (deflated 64%)\n  adding: build/js/ (stored 0%)\n  adding: build/js/index.ef2e6826.js (deflated 55%)\n  adding: build/js/chunk-common.796c9a86.js (deflated 70%)\n  adding: build/js/lazy-about.bf409f3c.js (deflated 61%)\n  adding: build/js/lazy-index.8357a1ea.js (deflated 74%)\n  adding: build/js/chunk-libs.067fcc9e.js (deflated 75%)\n  adding: build/js/chunk-vendors.735b3b0a.js (deflated 65%)\n  adding: build/js/subpage.c311f8d9.js (deflated 55%)\n  adding: build/fonts/ (stored 0%)\n  adding: build/fonts/mtdicon.fb320848.woff (deflated 46%)\n  adding: build/fonts/mtdicon.c8f43b86.ttf (deflated 46%)\n  adding: build/fonts/mtdicon.887757a1.eot (deflated 46%)\n  adding: build/img/ (stored 0%)\n  adding: build/img/mtdicon.a4cbdec0.svg (deflated 70%)\n  adding: build/img/logo.82b9c7a5.png (deflated 5%)\n  adding: build/css/ (stored 0%)\n  adding: build/css/subpage.55998ae0.css (deflated 31%)\n  adding: build/css/chunk-common.790a6fa6.css (deflated 60%)\n  adding: build/css/chunk-libs.223bf721.css (deflated 85%)\n  adding: build/css/lazy-index.a0cc21a2.css (deflated 33%)\n  adding: build/css/index.55998ae0.css (deflated 31%)\n  adding: build/favicon.ico (deflated 80%)\n  adding: build/subpage.html (deflated 64%)\n"
+          },
+          {
+            "name": "Shell Script: STAGE_STATUS=pending node /root/jenkins/awp-upload.js",
+            "id": "115",
+            "log": "+ STAGE_STATUS=pending node /root/jenkins/awp-upload.js\n<a href='http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/hfe/awpserver-zip/1669626845462-41caa847-604a-47f2-8248-da00f2b6a41d.zip'>http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/hfe/awpserver-zip/1669626845462-41caa847-604a-47f2-8248-da00f2b6a41d.zip</a>\nsend build zip url to stage callback:  {\"id\":27543346,\"flow_id\":3618477,\"plugin_id\":9,\"plugin_name\":\"Upload\",\"op\":\"\",\"status\":\"pending\",\"log\":[{\"name\":\"Shell Script: cd ${projectRoot:-.} &amp;&amp; zip -r /root/jenkins/build/build.zip build/\",\"id\":\"114\",\"log\":\"+ cd .\\n+ zip -r /root/jenkins/build/build.zip build/\\n  adding: build/ (stored 0%)\\n  adding: build/index.html (deflated 64%)\\n  adding: build/js/ (stored 0%)\\n  adding: build/js/index.ef2e6826.js (deflated 55%)\\n  adding: build/js/chunk-common.796c9a86.js (deflated 70%)\\n  adding: build/js/lazy-about.bf409f3c.js (deflated 61%)\\n  adding: build/js/lazy-index.8357a1ea.js (deflated 74%)\\n  adding: build/js/chunk-libs.067fcc9e.js (deflated 75%)\\n  adding: build/js/chunk-vendors.735b3b0a.js (deflated 65%)\\n  adding: build/js/subpage.c311f8d9.js (deflated 55%)\\n  adding: build/fonts/ (stored 0%)\\n  adding: build/fonts/mtdicon.fb320848.woff (deflated 46%)\\n  adding: build/fonts/mtdicon.c8f43b86.ttf (deflated 46%)\\n  adding: build/fonts/mtdicon.887757a1.eot (deflated 46%)\\n  adding: build/img/ (stored 0%)\\n  adding: build/img/mtdicon.a4cbdec0.svg (deflated 70%)\\n  adding: build/img/logo.82b9c7a5.png (deflated 5%)\\n  adding: build/css/ (stored 0%)\\n  adding: build/css/subpage.55998ae0.css (deflated 31%)\\n  adding: build/css/chunk-common.790a6fa6.css (deflated 60%)\\n  adding: build/css/chunk-libs.223bf721.css (deflated 85%)\\n  adding: build/css/lazy-index.a0cc21a2.css (deflated 33%)\\n  adding: build/css/index.55998ae0.css (deflated 31%)\\n  adding: build/favicon.ico (deflated 80%)\\n  adding: build/subpage.html (deflated 64%)\\n\"},{\"name\":\"Shell Script: STAGE_STATUS=pending node /root/jenkins/awp-upload.js\",\"id\":\"115\",\"log\":\"+ STAGE_STATUS=pending node /root/jenkins/awp-upload.js\\n&lt;a href='<a href='http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/hfe/awpserver-zip/1669626845462-41caa847-604a-47f2-8248-da00f2b6a41d.zip'>http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/hfe/awpserver-zip/1669626845462-41caa847-604a-47f2-8248-da00f2b6a41d.zip</a>'&gt;<a href='http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/hfe/awpserver-zip/1669626845462-41caa847-604a-47f2-8248-da00f2b6a41d.zip'>http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/hfe/awpserver-zip/1669626845462-41caa847-604a-47f2-8248-da00f2b6a41d.zip</a>&lt;/a&gt;\\n\"}],\"callback\":{\"description\":\"\",\"url\":\"<a href='http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/hfe/awpserver-zip/1669626845462-41caa847-604a-47f2-8248-da00f2b6a41d.zip'>http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/hfe/awpserver-zip/1669626845462-41caa847-604a-47f2-8248-da00f2b6a41d.zip</a>\",\"jobName\":\"nibfe-test-talos-project-production\",\"buildNumber\":\"6\"},\"created_at\":\"2022-11-28T09:14:04.637Z\",\"updated_at\":\"2022-11-28T09:14:05.000Z\"}\n"
+          },
+          {
+            "name": "Shell Script: STAGE_NAME=${STAGE_NAME} DESCRIPTION=\"压缩包上传成功\" STAGE_STATUS=success node /root/jenkins/report-stage.js",
+            "id": "118",
+            "log": "+ STAGE_NAME=Upload DESCRIPTION=压缩包上传成功 STAGE_STATUS=success node /root/jenkins/report-stage.js\n"
+          }
+        ],
+        "callback": {
+          "description": "压缩包上传成功",
+          "url": "http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/hfe/awpserver-zip/1669626845462-41caa847-604a-47f2-8248-da00f2b6a41d.zip",
+          "jobName": "nibfe-test-talos-project-production",
+          "buildNumber": "6"
+        },
+        "created_at": "2022-11-28T09:14:04.637Z",
+        "updated_at": "2022-11-28T09:14:06.000Z"
+      },
+      {
+        "id": 27543350,
+        "flow_id": 3618477,
+        "plugin_id": 84,
+        "plugin_name": "Canary",
+        "op": "",
+        "status": "success",
+        "log": [
+          {
+            "log": "发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/js/index.ef2e6826.js\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/js/lazy-about.bf409f3c.js\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/js/lazy-index.8357a1ea.js\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/js/subpage.c311f8d9.js\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/img/logo.82b9c7a5.png\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/css/subpage.55998ae0.css\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/css/chunk-common.790a6fa6.css\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/css/lazy-index.a0cc21a2.css\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/css/index.55998ae0.css\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/favicon.ico\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/fonts/mtdicon.fb320848.woff\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/fonts/mtdicon.c8f43b86.ttf\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/fonts/mtdicon.887757a1.eot\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/js/chunk-common.796c9a86.js\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/img/mtdicon.a4cbdec0.svg\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/js/chunk-vendors.735b3b0a.js\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/css/chunk-libs.223bf721.css\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/js/chunk-libs.067fcc9e.js\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/js/index.ef2e6826.js\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/js/lazy-about.bf409f3c.js\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/js/lazy-index.8357a1ea.js\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/js/subpage.c311f8d9.js\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/img/logo.82b9c7a5.png\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/css/subpage.55998ae0.css\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/css/chunk-common.790a6fa6.css\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/css/lazy-index.a0cc21a2.css\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/css/index.55998ae0.css\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/favicon.ico\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/fonts/mtdicon.fb320848.woff\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/fonts/mtdicon.c8f43b86.ttf\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/fonts/mtdicon.887757a1.eot\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/js/chunk-common.796c9a86.js\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/img/mtdicon.a4cbdec0.svg\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/js/chunk-vendors.735b3b0a.js\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/css/chunk-libs.223bf721.css\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets-st/nibfe/test-talos-project/js/chunk-libs.067fcc9e.js\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/js/index.ef2e6826.js\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/js/lazy-about.bf409f3c.js\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/js/lazy-index.8357a1ea.js\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/js/subpage.c311f8d9.js\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/img/logo.82b9c7a5.png\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/css/subpage.55998ae0.css\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/css/chunk-common.790a6fa6.css\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/css/lazy-index.a0cc21a2.css\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/css/index.55998ae0.css\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/favicon.ico\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/fonts/mtdicon.fb320848.woff\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/fonts/mtdicon.c8f43b86.ttf\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/fonts/mtdicon.887757a1.eot\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/js/chunk-common.796c9a86.js\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/img/mtdicon.a4cbdec0.svg\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/js/chunk-vendors.735b3b0a.js\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/css/chunk-libs.223bf721.css\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets-st/nibfe/test-talos-project/js/chunk-libs.067fcc9e.js\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/js/index.ef2e6826.js\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/js/lazy-about.bf409f3c.js\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/js/lazy-index.8357a1ea.js\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/js/subpage.c311f8d9.js\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/img/logo.82b9c7a5.png\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/css/subpage.55998ae0.css\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/css/chunk-common.790a6fa6.css\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/css/lazy-index.a0cc21a2.css\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/css/index.55998ae0.css\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/favicon.ico\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/fonts/mtdicon.fb320848.woff\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/fonts/mtdicon.c8f43b86.ttf\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/fonts/mtdicon.887757a1.eot\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/js/chunk-common.796c9a86.js\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/img/mtdicon.a4cbdec0.svg\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/js/chunk-vendors.735b3b0a.js\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/css/chunk-libs.223bf721.css\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/js/chunk-libs.067fcc9e.js\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/js/index.ef2e6826.js\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/js/lazy-about.bf409f3c.js\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/js/lazy-index.8357a1ea.js\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/js/subpage.c311f8d9.js\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/img/logo.82b9c7a5.png\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/css/subpage.55998ae0.css\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/css/chunk-common.790a6fa6.css\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/css/lazy-index.a0cc21a2.css\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/css/index.55998ae0.css\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/favicon.ico\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/fonts/mtdicon.fb320848.woff\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/fonts/mtdicon.c8f43b86.ttf\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/fonts/mtdicon.887757a1.eot\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/js/chunk-common.796c9a86.js\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/img/mtdicon.a4cbdec0.svg\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/js/chunk-vendors.735b3b0a.js\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/css/chunk-libs.223bf721.css\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/hfe-assets/nibfe/test-talos-project/js/chunk-libs.067fcc9e.js\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/js/index.ef2e6826.js\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/js/lazy-about.bf409f3c.js\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/js/lazy-index.8357a1ea.js\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/js/subpage.c311f8d9.js\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/img/logo.82b9c7a5.png\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/css/subpage.55998ae0.css\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/css/chunk-common.790a6fa6.css\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/css/lazy-index.a0cc21a2.css\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/css/index.55998ae0.css\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/favicon.ico\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/fonts/mtdicon.fb320848.woff\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/fonts/mtdicon.c8f43b86.ttf\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/fonts/mtdicon.887757a1.eot\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/js/chunk-common.796c9a86.js\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/img/mtdicon.a4cbdec0.svg\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/js/chunk-vendors.735b3b0a.js\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/css/chunk-libs.223bf721.css\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/hfe-assets/nibfe/test-talos-project/js/chunk-libs.067fcc9e.js\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/awp-html-in/canary/3618477_3c81d48/nibfe/test-talos-project/index.html\n发布成功 http://s3plus.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/awp-html-in/canary/3618477_3c81d48/nibfe/test-talos-project/subpage.html\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/awp-html-in/canary/3618477_3c81d48/nibfe/test-talos-project/index.html\n上海线上发布成功 http://mss-shon.vip.sankuai.com/v1/mss_5d36254f5d7d4de5ad564fb3bb84682c/awp-html-in/canary/3618477_3c81d48/nibfe/test-talos-project/subpage.html\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/awp-html-in/canary/3618477_3c81d48/nibfe/test-talos-project/index.html\n测试环境发布成功 http://msstest-corp.sankuai.com/v1/mss_kSA9pkozf0iWTcuco+XPnw==/awp-html-in/canary/3618477_3c81d48/nibfe/test-talos-project/subpage.html"
+          }
+        ],
+        "callback": {
+          "description": "发布成功",
+          "groupMsg": "发布成功，发布日志见：https://talos.sankuai.com/#/project/9016/log/3618477"
+        },
+        "created_at": "2022-11-28T09:14:07.006Z",
+        "updated_at": "2022-11-28T09:14:08.000Z"
+      },
+      {
+        "id": 27543353,
+        "flow_id": 3618477,
+        "plugin_id": 85,
+        "plugin_name": "CanaryCheck",
+        "op": "",
+        "status": "pending",
+        "log": [
+          {
+            "log": "日志拉取中 ..."
+          }
+        ],
+        "callback": {
+          "description": "成功"
+        },
+        "created_at": "2022-11-28T09:14:08.899Z",
+        "updated_at": "2022-11-28T09:14:08.000Z"
+      }
+    ]
+  }
+}

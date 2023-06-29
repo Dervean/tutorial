@@ -1,0 +1,28 @@
+{
+  "status": 0,
+  "statusCode": 200,
+  "payload": {
+    "status": "building",
+    "start_time": "2022-11-21 00:00:00",
+    "end_time": "2022-11-28 23:59:59",
+    "page_size": "10",
+    "page_num": "1",
+    "app_id": "9016"
+  },
+  "userInfo": {
+    "login": "wangdeyun",
+    "name": "王德运",
+    "role": "member",
+    "orgId": "12345",
+    "orgName": "name"
+  },
+  "data": {
+    "pageInfo": {
+      "currentPageNum": "1",
+      "pageSize": "10",
+      "totalPageCount": 0,
+      "totalCount": 0
+    },
+    "list": []
+  }
+}

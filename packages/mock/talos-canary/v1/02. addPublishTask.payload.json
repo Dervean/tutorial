@@ -1,0 +1,58 @@
+{
+  "cid": 55378,
+  "target": "production",
+  "comment": {
+    "wiki": "",
+    "note": "feat: init\nfeat: project init\n",
+    "version": ""
+  },
+  "swimlane": "",
+  "type": "canary",
+  "saveAndPub": false,
+  "config": {
+    "business_type": "Rome-Project",
+    "isLock": false,
+    "refType": "branch",
+    "branch": "release/test-canary",
+    "commit": "",
+    "envs": [],
+    "privateEnvs": [],
+    "pluginsConfig": {
+      "89": {
+        "COLLECT_CATKEY_TYPE": "1"
+      },
+      "217": {},
+      "578": {
+        "REPO_PR_ID": "1",
+        "MODULE_CHECK_LIST": "http://s3plus.vip.sankuai.com/v1/mss_fdf7a41aad474b02bd6c37a481cac860/dyna-cdn/schemas/dist/EB_APPROVERS.json"
+      }
+    },
+    "canaryConfig": {
+      "cookiePath": "/",
+      "canaryStages": [
+        {
+          "dateTime": "",
+          "percentage": 1
+        }
+      ],
+      "canaryPreLimit": 0,
+      "whitelistStrategies": [],
+      "canaryRangeLimit": 20,
+      "whitelistCanary": false,
+      "accountWhiteList": []
+    },
+    "value": {
+      "refType": "branch",
+      "envs": [],
+      "name": "production"
+    }
+  },
+  "appName": "test-talos-project",
+  "targetName": "production",
+  "userMis": "wangdeyun",
+  "userName": "王德运",
+  "relatedMis": [],
+  "teamLeaderMis": "wangdeyun",
+  "easyPublishMessage": "发布环境为：production\n发布分支为：release/test-canary\n环境变量：\n\n特殊配置：\n",
+  "id": 9016
+}

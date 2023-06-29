@@ -1,0 +1,18 @@
+{
+    "projectId": 63,
+    "bucket": "dyna",
+    "assets": {
+        "LOCATION": {
+            "version": "latest",
+            "versionTest": "latest"
+        }
+    },
+    "inject": false,
+    "endpoints": [
+        "s3plus.meituan.net",
+        "s3plus-shon.meituan.net"
+    ],
+    "retries": 0,
+    "requestTimeout": 3000,
+    "fallbackTimeout": 10000
+}
